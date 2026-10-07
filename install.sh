@@ -105,15 +105,22 @@ cleanup() {
 # path, which is the format of ~/.claude/surge/checksums. It only reads.
 #
 # Every file counts, one the founder added included, except the .DS_Store
-# Finder writes into every folder it opens. Each file is hashed from stdin, so
-# the tool's own quoting of unusual names never reaches the record.
+# Finder writes into every folder it opens. The folder's files are hashed in
+# ONE run of the tool (a few, for a very large folder), not one run per file:
+# on Windows under Git Bash a process costs about a tenth of a second, and a
+# whole-team install hashes some three hundred files, so one process per file
+# was minutes of silence after "Downloading" that read as a hang (7 Oct 2026).
+# The tool prints each name after its hash, and escapes a backslash or a
+# newline in a name with a leading backslash; this installer puts no such name
+# anywhere, a name with a newline is refused below, and a founder's file with
+# a backslash in its name reads as changed, which only ever means a backup.
 #
 # Returns non-zero, meaning "cannot be checked", when this machine has neither
 # sha256sum nor shasum, when a file cannot be read, and when the folder holds
 # a symlink (or anything else that is neither a file nor a folder) or a name
 # with a newline in it. This installer puts none of those there.
 checksums_of() {
-  local folder="$1" label="$2" hasher odd nl file sum
+  local folder="$1" label="$2" hasher odd nl
   if command -v sha256sum >/dev/null 2>&1; then
     hasher='sha256sum'
   elif command -v shasum >/dev/null 2>&1; then
@@ -124,12 +131,28 @@ checksums_of() {
   nl=$'\n'
   odd="$(LC_ALL=C find "$folder" \( ! -type d ! -type f \) -o -name "*$nl*" 2>/dev/null)" || return 1
   if [ -n "$odd" ]; then return 1; fi
-  LC_ALL=C find "$folder" ! -type d ! -name .DS_Store 2>/dev/null | LC_ALL=C sort | while IFS= read -r file; do
-    sum="$( { $hasher < "$file"; } 2>/dev/null )" || exit 1
-    sum="${sum%% *}"
-    if [ "${#sum}" -ne 64 ]; then exit 1; fi
-    printf '%s  %s/%s\n' "$sum" "$label" "${file#"$folder"/}"
-  done
+  # Every path starts with "$folder/", so none can be read as an option, and
+  # the tool's output is checked line by line: a line that is not a 64-hex
+  # hash, a separator and a path under the folder makes the whole folder
+  # "cannot be checked" rather than a wrong record. The separator is two
+  # spaces, or a space and a star where the tool defaults to binary mode (Git
+  # Bash on Windows does; measured 7 Oct 2026); the record always carries two
+  # spaces, so the same files hash to the same record on every machine. An
+  # empty listing is "cannot be checked" too:
+  # every folder this installer puts down holds at least one file, and a
+  # hasher that printed nothing (a tool missing from PATH, say) must not read
+  # as "nothing changed". The pipeline's own failures propagate (pipefail).
+  LC_ALL=C find "$folder" ! -type d ! -name .DS_Store -print0 2>/dev/null \
+    | LC_ALL=C sort -z \
+    | LC_ALL=C xargs -0 -r $hasher 2>/dev/null \
+    | LC_ALL=C awk -v prefix="$folder/" -v label="$label" '
+        BEGIN { n = length(prefix); bad = 0 }
+        {
+          sum = substr($0, 1, 64); sep = substr($0, 65, 2); file = substr($0, 67)
+          if (sum !~ /^[0-9a-f][0-9a-f]*$/ || length(sum) != 64 || (sep != "  " && sep != " *") || substr(file, 1, n) != prefix) { bad = 1; exit 1 }
+          print sum "  " label "/" substr(file, n + 1)
+        }
+        END { if (bad || NR == 0) exit 1 }'
 }
 
 # The record's lines for label $1, out of the record's text $2.
@@ -198,7 +221,7 @@ spoken() {
 # so a download cut off halfway runs nothing at all.
 main() {
   [ -n "${HOME:-}" ] || fail "HOME is not set, so there is nowhere to install to."
-  for tool in curl tar gzip mktemp; do
+  for tool in curl tar gzip mktemp xargs; do
     command -v "$tool" >/dev/null 2>&1 || fail "This needs '$tool', which is not installed on this machine."
   done
   if [ "$(id -u 2>/dev/null || echo 1)" = "0" ]; then
@@ -303,6 +326,8 @@ main() {
     message="$(head -c 600 "$SURGE_WORK/pack.tar.gz" 2>/dev/null | tr -d '\r' || true)"
     fail "${message:-The download was refused (HTTP $status).}"
   fi
+
+  say "  Downloaded. Unpacking and checking every file, which can take a minute on Windows..."
 
   mkdir "$SURGE_WORK/pack"
   tar -xzmf "$SURGE_WORK/pack.tar.gz" -C "$SURGE_WORK/pack" 2>/dev/null \
