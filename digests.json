@@ -1,0 +1,45 @@
+{
+  "employees": [
+    {
+      "key": "business-strategist",
+      "name": "The Business Strategist",
+      "version": "eb2d10f222b7",
+      "digest": "eb2d10f222b734edfcf1a281e3af6e74fd840ba80aa981b7bf9ff33ed8185e7a"
+    },
+    {
+      "key": "content-marketer",
+      "name": "The Content Marketer",
+      "version": "7066846a9da1",
+      "digest": "7066846a9da118e46fe0584869df83ba54444fc6a9dd0e5ae8026279a42fa8c4"
+    },
+    {
+      "key": "growth-and-sales",
+      "name": "The Growth & Sales Rep",
+      "version": "76792e6ea1c1",
+      "digest": "76792e6ea1c14e8569024304d253e4e0da4135eefe6bf3eb08ef107df88bef80"
+    },
+    {
+      "key": "brand-and-product",
+      "name": "The Brand & Product Builder",
+      "version": "dfeae9b36180",
+      "digest": "dfeae9b361801b73deec406afe0e0cd5cec351a526670fe3254854a59edd478f"
+    }
+  ],
+  "archives": [
+    "brand-and-product.tar.gz",
+    "business-strategist.tar.gz",
+    "content-marketer.tar.gz",
+    "growth-and-sales.tar.gz",
+    "business-strategist_brand-and-product.tar.gz",
+    "business-strategist_content-marketer.tar.gz",
+    "business-strategist_growth-and-sales.tar.gz",
+    "content-marketer_brand-and-product.tar.gz",
+    "content-marketer_growth-and-sales.tar.gz",
+    "growth-and-sales_brand-and-product.tar.gz",
+    "business-strategist_content-marketer_brand-and-product.tar.gz",
+    "business-strategist_content-marketer_growth-and-sales.tar.gz",
+    "business-strategist_growth-and-sales_brand-and-product.tar.gz",
+    "content-marketer_growth-and-sales_brand-and-product.tar.gz",
+    "business-strategist_content-marketer_growth-and-sales_brand-and-product.tar.gz"
+  ]
+}
