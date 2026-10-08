@@ -4,7 +4,7 @@
 
 ## The rules
 
-1. **Start from what exists.** If `BUSINESS-BRAIN.md` is present (Module 3 says where to look), read it first and say what it already answers. Ask only what is `_unanswered_` or what the founder says has changed. Restarting an interview a file already holds is the failure this skill exists to remove.
+1. **Start from what exists.** If a brain is there — hosted, or `BUSINESS-BRAIN.md` (Module 3 says where to look, the hosted one first) — read it first and say what it already answers. Ask only what is unanswered or what the founder says has changed. Restarting an interview a brain already holds is the failure this skill exists to remove.
 2. **One question at a time, and wait.** A numbered list of forty questions is a form, not an interview, and it gets abandoned. Ask, wait for the answer, then ask the next.
 3. **Parts in order, and say which part you are on.** "Next is *Brand voice and style* — how the business sounds." The founder should always know where they are and roughly how far there is to go.
 4. **Required first within a part.** Later skills cannot do without them. Optional questions can be offered as "want to do these now, or come back later?"

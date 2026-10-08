@@ -4,7 +4,7 @@
 
 Tags: **[S]** The Business Strategist · **[C]** The Content Marketer · **[G]** The Growth & Sales Rep · **[B]** The Brand & Product Builder.
 
-Every journey assumes `find-your-niche` runs first **only** if `BUSINESS-BRAIN.md` does not already answer who the business serves. Check the brain before recommending it.
+Every journey assumes `find-your-niche` runs first **only** if the Business Brain, hosted or file, does not already answer who the business serves. Check the brain before recommending it.
 
 ## "I want to start selling something new"
 

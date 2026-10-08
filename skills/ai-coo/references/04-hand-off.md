@@ -5,7 +5,7 @@
 ## When the skill is installed
 
 1. Say the route in one line: the skill, why, and what it will need from them (Module 1's tables say what each produces; the skill's own opening stage collects the rest).
-2. **Carry the brain forward.** If `BUSINESS-BRAIN.md` exists, tell the skill it is there — it reads the file at the start of its onboarding and skips what the file answers. If the founder said anything in this conversation the brain does not hold (a new price, a new goal), pass that along explicitly.
+2. **Carry the brain forward.** If there is a brain, hosted or file, tell the skill which — it reads the brain at the start of its onboarding (a hosted one through the read tool, never a new file) and skips what the brain answers. If the founder said anything in this conversation the brain does not hold (a new price, a new goal), pass that along explicitly.
 3. Invoke the skill by its exact name. Do not re-collect what the founder already told you.
 
 ## When the skill is NOT installed

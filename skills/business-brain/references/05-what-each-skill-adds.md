@@ -43,4 +43,4 @@ Keys are the catalogue's; Module 1 has the question behind each.
 
 ## Handoff
 
-None. Module 4 says how a hand-back is folded into the file.
+None. Module 4 says how a hand-back reaches the brain: an import, as a draft, where a Business Brain tool is available; a fold into the file everywhere else.

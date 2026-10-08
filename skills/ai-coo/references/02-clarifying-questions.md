@@ -6,7 +6,7 @@
 
 If the request already matches one skill's trigger phrases in Module 1, or a journey in Module 3, recommend at once. Asking a question the founder has effectively already answered reads as not having listened.
 
-If `BUSINESS-BRAIN.md` exists, read it before asking anything. It usually answers the second question below outright.
+If there is a Business Brain, hosted or file (Module 5 says where to look), read it before asking anything. It usually answers the second question below outright.
 
 ## The two questions that resolve almost everything
 

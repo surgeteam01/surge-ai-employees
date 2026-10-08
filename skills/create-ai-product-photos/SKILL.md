@@ -38,5 +38,5 @@ A 14-stage pipeline that takes a raw product through to a finished, consistency-
 Product type and category, target platforms (Amazon, Shopify, Instagram, a combination), existing product photos if any, an existing `build-your-own-brand-identity` guidelines document if one exists, AI image tool(s) available (Midjourney, DALL-E, Adobe Firefly, etc.), and any hard constraints (platform content policies, claims that can't be visually implied).
 
 <!-- surge:brain-crosswalk:begin -->
-**From your Business Brain:** if `BUSINESS-BRAIN.md` exists, Stage 1 reads *Business name* (`business_name`), *Core offers* (`core_offers`), *Brand colours* (`brand_colors`), *Imagery style* (`brand_imagery_style`), *Design don'ts* (`brand_design_donts`) from it and asks only for the rest. On finishing, it hands back *Imagery style* (`brand_imagery_style`) for the founder to fold into the file.
+**From your Business Brain:** if your Business Brain exists (from your Surge server, or `BUSINESS-BRAIN.md`), Stage 1 reads *Business name* (`business_name`), *Core offers* (`core_offers`), *Brand colours* (`brand_colors`), *Imagery style* (`brand_imagery_style`), *Design don'ts* (`brand_design_donts`) from it and asks only for the rest. On finishing, it hands back *Imagery style* (`brand_imagery_style`) into the brain.
 <!-- surge:brain-crosswalk:end -->

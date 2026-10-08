@@ -29,7 +29,7 @@ start from a blank page.
 
 ## How to run this skill
 
-1. **Read Stage 5 first, every time.** If there is no `BUSINESS-BRAIN.md`, offer the `business-brain` skill before anything else — once, briefly, without blocking the request. If there is one, read it: it is the brief you will carry into the hand-off.
+1. **Read Stage 5 first, every time.** If there is no brain, hosted or file, offer the `business-brain` skill before anything else — once, briefly, without blocking the request. If there is one — in your instructions, through a Business Brain read tool, or `BUSINESS-BRAIN.md` — read it: it is the brief you will carry into the hand-off. With a hosted brain, never offer the interview as if the founder had no brain yet.
 2. **Read the request against Stage 1.** If it already clearly matches one skill's trigger phrases, skip straight to Stage 4 — this skill exists for the genuinely unclear cases, not as a mandatory checkpoint.
 3. **If the goal is broad**, ask one or two questions from Stage 2. Never more than two before recommending; a fast, confident answer is the whole value here.
 4. **Check Stage 3 before reasoning a chain from scratch.** Many real goals span several skills, and often more than one employee; the journeys say where each step lives.
@@ -38,4 +38,4 @@ start from a blank page.
 
 ## Inputs this skill needs (collected in Stage 1)
 
-The founder's request, in their own words; which AI Employees are installed (Stage 1 says, or you ask); and their `BUSINESS-BRAIN.md` if one exists (Stage 5 says where to look).
+The founder's request, in their own words; which AI Employees are installed (Stage 1 says, or you ask); and their Business Brain, hosted or `BUSINESS-BRAIN.md`, if one exists (Stage 5 says where to look).

@@ -1,16 +1,16 @@
 The Brand & Product Builder
-pack     dfeae9b36180
-digest   dfeae9b361801b73deec406afe0e0cd5cec351a526670fe3254854a59edd478f
+pack     ea6ea4b73b90
+digest   ea6ea4b73b900a9b097c9a1c370f11864698392d2c0ecd17fc276e94de07e545
 
 Capabilities in this pack:
-  build-your-own-brand-identity          9e90f88fd12d
-  create-ai-product-photos               09533f5e0c01
-  course-creator                         d066508464fa
-  write-your-book                        e0bae373ad08
-  launch-a-digital-product               75b2d0b185ea
-  vibe-code-assistant                    eb9a56113b52
-  ai-coo                                 f99693dca253
-  business-brain                         3738ad385301
+  build-your-own-brand-identity          de7df69172e7
+  create-ai-product-photos               b0ce3d6dda44
+  course-creator                         d29a140f8a8e
+  write-your-book                        f68afac7ed87
+  launch-a-digital-product               68249dbdac9f
+  vibe-code-assistant                    7f36069b6ff1
+  ai-coo                                 c92f530abbac
+  business-brain                         624731f2e911
 
 Quote the pack line if you ask us about this download. Each capability carries
 its own digest, so an update names what actually changed rather than telling you

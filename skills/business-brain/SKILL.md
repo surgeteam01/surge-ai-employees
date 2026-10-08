@@ -29,11 +29,11 @@ you are never asked these questions again.
 
 ## How to run this skill
 
-1. **Look for an existing `BUSINESS-BRAIN.md` first**, per Stage 3. If there is one, read it, say what it already answers, and ask only what is marked `_unanswered_` or what the user says has changed. Never restart an interview a file already holds.
+1. **Look for an existing brain first**, per Stage 3: the hosted one when it is in your instructions or a read tool is there (`business_brain.read`, or one whose name ends in `business_brain_read`), and `BUSINESS-BRAIN.md` only when it is not. If there is one, read it, say what it already answers, and ask only what is unanswered (marked `_unanswered_`, or missing in the tool's readout) or what the user says has changed. Never restart an interview a brain already holds.
 2. **Read Stage 1 for the questions and Stage 2 for the conduct**, then interview: one question at a time, the parts in order, required questions first within a part. Accept "skip".
 3. **Read the whole thing back** in your own words before writing, and fix what the user corrects.
-4. **Write the file** in the exact shape Stage 1 shows — one heading per field carrying its key in backticks — and put it where Stage 3 says for this host. Say where you put it.
-5. **Tell the user what to do next**: the skill they came for will now read the file and skip its own opening questions.
+4. **Write it down** in the exact shape Stage 1 shows — one heading per field carrying its key in backticks. On a machine connected to the founder's Surge server (`business_brain_import_portable`, or a tool whose name ends in it, is there), send that markdown to the import tool, never into a new file: it lands a **draft** — say so, never "updated" — and the founder publishes it on the Business Brain page. If the tool refuses, or you read a hosted brain but have no import tool, hand the block over for the founder to import on that page. Only with no hosted brain, put the file where Stage 3 says for this host. Say where it went.
+5. **Tell the user what to do next**: the skill they came for will now read the brain and skip its own opening questions. On a Surge server, their AI Employees' hosted runs read it once the founder publishes the draft.
 
 ## Inputs this skill needs (collected in Stage 1)
 

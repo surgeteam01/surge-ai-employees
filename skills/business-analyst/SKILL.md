@@ -42,5 +42,5 @@ This skill is a genuinely different kind of pipeline from the marketing/content 
 Business context, available data (format, source, time range), the specific question or goal driving this analysis, who the report is for (a specific stakeholder, their technical fluency, what decision they're trying to make), and any existing dashboards/tools already in use.
 
 <!-- surge:brain-crosswalk:begin -->
-**From your Business Brain:** if `BUSINESS-BRAIN.md` exists, Stage 1 reads *Business name* (`business_name`), *Industry / niche* (`industry_niche`), *Core offers* (`core_offers`), *Current goals* (`current_goals`), *Decision framework* (`decision_framework`) from it and asks only for the rest. It establishes no standing fact about the business, so it hands nothing back unless the founder said something new along the way.
+**From your Business Brain:** if your Business Brain exists (from your Surge server, or `BUSINESS-BRAIN.md`), Stage 1 reads *Business name* (`business_name`), *Industry / niche* (`industry_niche`), *Core offers* (`core_offers`), *Current goals* (`current_goals`), *Decision framework* (`decision_framework`) from it and asks only for the rest. It establishes no standing fact about the business, so it hands nothing back unless the founder said something new along the way.
 <!-- surge:brain-crosswalk:end -->

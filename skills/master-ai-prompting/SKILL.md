@@ -37,5 +37,5 @@ A 14-stage pipeline that takes a user's real, recurring AI use case through to a
 What tasks/use cases the user wants to use AI for, which AI tools they currently use, their current prompting habits and specific frustrations, a sample of a real prompt they've actually used recently (essential for Module 14), and their general comfort level with AI tools.
 
 <!-- surge:brain-crosswalk:begin -->
-**From your Business Brain:** if `BUSINESS-BRAIN.md` exists, Stage 1 reads *Content types* (`content_types`), *Platforms* (`content_platforms`), *Tone* (`tone`), *Phrases to avoid* (`phrases_to_avoid`), *Admin support* (`admin_support`) from it and asks only for the rest. It establishes no standing fact about the business, so it hands nothing back unless the founder said something new along the way.
+**From your Business Brain:** if your Business Brain exists (from your Surge server, or `BUSINESS-BRAIN.md`), Stage 1 reads *Content types* (`content_types`), *Platforms* (`content_platforms`), *Tone* (`tone`), *Phrases to avoid* (`phrases_to_avoid`), *Admin support* (`admin_support`) from it and asks only for the rest. It establishes no standing fact about the business, so it hands nothing back unless the founder said something new along the way.
 <!-- surge:brain-crosswalk:end -->
