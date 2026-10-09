@@ -51,10 +51,10 @@ free tier.
 
 | AI Employee | Key | What they do | Skills |
 |---|---|---|---|
-| **The Business Strategist** | `business-strategist` | Tells you what is actually wrong, and what to fix first. | 8 |
-| **The Content Marketer** | `content-marketer` | Fills the calendar, in your voice, without you writing it. | 9 |
-| **The Growth & Sales Rep** | `growth-and-sales` | Turns attention into booked calls, and calls into revenue. | 8 |
-| **The Brand & Product Builder** | `brand-and-product` | Builds the thing you sell, and makes it look like it is worth the price. | 8 |
+| **The Business Strategist** | `business-strategist` | Tells you what is actually wrong, and what to fix first. | 9 |
+| **The Content Marketer** | `content-marketer` | Fills the calendar, in your voice, without you writing it. | 10 |
+| **The Growth & Sales Rep** | `growth-and-sales` | Turns attention into booked calls, and calls into revenue. | 9 |
+| **The Brand & Product Builder** | `brand-and-product` | Builds the thing you sell, and makes it look like it is worth the price. | 9 |
 
 Every AI Employee comes with **The AI COO** (the front door: ask it who you
 have, and it routes a goal to the right skill or tells you which employee holds

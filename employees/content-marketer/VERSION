@@ -1,6 +1,6 @@
 The Content Marketer
-pack     88a9f9c5d0e6
-digest   88a9f9c5d0e62e6960d0fff2b030057c9a299f1ef284c61190b3ec8dc41ae4cb
+pack     7cb7fda1b003
+digest   7cb7fda1b00336c577fb8c6aa00588ae50efafab3bb27859655371a0f5e91308
 
 Capabilities in this pack:
   content-calendar                       dc446858cb3b
@@ -10,8 +10,9 @@ Capabilities in this pack:
   start-a-faceless-channel               eac9eac51595
   launch-a-podcast                       9aa49927cce9
   rank-on-google                         bd94b98a92a5
-  ai-coo                                 20bafaf18e21
+  ai-coo                                 dcb61fdf4d10
   business-brain                         624731f2e911
+  design-your-ai-employee                152a6d324921
 
 Quote the pack line if you ask us about this download. Each capability carries
 its own digest, so an update names what actually changed rather than telling you

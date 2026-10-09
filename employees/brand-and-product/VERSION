@@ -1,6 +1,6 @@
 The Brand & Product Builder
-pack     ea6ea4b73b90
-digest   ea6ea4b73b900a9b097c9a1c370f11864698392d2c0ecd17fc276e94de07e545
+pack     92a8b5eae36b
+digest   92a8b5eae36b8d4431d46a19d7c3de3c1de668066f2b3ee71d457a4e232ca4fc
 
 Capabilities in this pack:
   build-your-own-brand-identity          de7df69172e7
@@ -9,8 +9,9 @@ Capabilities in this pack:
   write-your-book                        f68afac7ed87
   launch-a-digital-product               68249dbdac9f
   vibe-code-assistant                    7f36069b6ff1
-  ai-coo                                 c92f530abbac
+  ai-coo                                 5ee36bff5a02
   business-brain                         624731f2e911
+  design-your-ai-employee                152a6d324921
 
 Quote the pack line if you ask us about this download. Each capability carries
 its own digest, so an update names what actually changed rather than telling you

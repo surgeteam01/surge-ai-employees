@@ -49,6 +49,7 @@ on this list.
 |---|---|
 | **The AI COO** | Route a request to the right AI Employee, and say plainly when it lives in one you have not hired. |
 | **Business Brain** | Interview the business once and keep what it said, so no skill asks twice. |
+| **Design your AI Employee** | Interview, read what you have, find what you could have, and design the employee nobody on your roster is yet. |
 
 ---
 
@@ -74,5 +75,5 @@ other skill reads first, so nobody explains their business twice. Start there.
 *Part of AI Employees for Founders by Surge Systems.*
 *These skills are yours to use. Please do not redistribute them.*
 
-Pack version `c641d118cca2` — see `VERSION` for the capability
+Pack version `43ddbe456f39` — see `VERSION` for the capability
 digests. If we improve one of these, the update names the capability that moved.

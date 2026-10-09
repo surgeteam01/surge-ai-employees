@@ -1,6 +1,6 @@
 The Business Strategist
-pack     46ead6cb04d0
-digest   46ead6cb04d094c0eef78dab6d1e8775f20c7b1ecde7059b72acdc2fdfde0a33
+pack     abf038d7de2a
+digest   abf038d7de2a2aa2fbaf5826fbbb7d34f9398585a6608e25793f0bc94fb35a02
 
 Capabilities in this pack:
   audit-my-business                      8bc48c3ea681
@@ -9,8 +9,9 @@ Capabilities in this pack:
   pricing-and-packaging                  be9019036a11
   productize-your-service                c8011a352be1
   master-ai-prompting                    b82d35d53666
-  ai-coo                                 eb4e14ef96a3
+  ai-coo                                 f1a1216b5489
   business-brain                         624731f2e911
+  design-your-ai-employee                152a6d324921
 
 Quote the pack line if you ask us about this download. Each capability carries
 its own digest, so an update names what actually changed rather than telling you
