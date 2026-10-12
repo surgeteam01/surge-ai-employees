@@ -11,7 +11,9 @@
 # What it does, and nothing else:
 #   0. installs Claude Code with Anthropic's own installer, if it is not
 #      installed yet, and makes sure the claude command is on your PATH
-#      ($env:SURGE_INSTALL_CLAUDE_CODE = '0' skips this);
+#      ($env:SURGE_INSTALL_CLAUDE_CODE = '0' skips this), and the Claude app,
+#      Anthropic's per-user package, if it is not installed yet
+#      ($env:SURGE_INSTALL_CLAUDE_APP = '0' skips that);
 #   1. downloads the AI Employee skills from the link below;
 #   2. puts each skill folder in Claude Code's skills folder, ~\.claude\skills;
 #   3. puts each employee's README and training guide in ~\.claude\surge;
@@ -47,6 +49,8 @@ function Install-SurgeAiEmployees {
   $SurgeRoster = 'business-strategist content-marketer growth-and-sales brand-and-product'
   $ClaudeCodePs1 = 'https://claude.ai/install.ps1'
   $ClaudeCodePage = 'https://claude.com/product/claude-code'
+  $ClaudeAppMsixX64 = 'https://claude.ai/api/desktop/win32/x64/msix/latest/redirect'
+  $ClaudeAppMsixArm64 = 'https://claude.ai/api/desktop/win32/arm64/msix/latest/redirect'
 
   $ErrorActionPreference = 'Stop'
   $ProgressPreference = 'SilentlyContinue'
@@ -185,6 +189,27 @@ function Install-SurgeAiEmployees {
   # reads that installer's UTF-8 in the console's own code page. A spinner
   # stands in for them. Already installed: nothing is touched. Returns $true
   # when it installed it.
+  # $Command in a PowerShell of its own, its words in $Log, with a spinner
+  # beside $Words until it ends. Returns its exit code.
+  function Invoke-WithSpinner([string]$Words, [string]$Command, [string]$Log) {
+    $setup = "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; `$ProgressPreference = 'SilentlyContinue'; "
+    $process = Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$setup$Command`"" `
+      -NoNewWindow -PassThru -RedirectStandardOutput $Log -RedirectStandardError "$Log.err"
+    $null = $process.Handle  # without it, Windows PowerShell can lose the exit code
+    $frames = '|/-\'
+    $i = 0
+    while (-not $process.HasExited) {
+      Write-Host "`r  " -NoNewline
+      Write-Host $frames[$i % 4] -ForegroundColor Cyan -NoNewline
+      Write-Host " $Words" -NoNewline
+      $i += 1
+      Start-Sleep -Milliseconds 200
+    }
+    $process.WaitForExit()
+    Clear-Line
+    return $process.ExitCode
+  }
+
   function Install-ClaudeCode([string]$Work) {
     if ($env:SURGE_INSTALL_CLAUDE_CODE -eq '0') { return $false }
     if (Find-Claude) {
@@ -192,22 +217,8 @@ function Install-SurgeAiEmployees {
       return $false
     }
     $log = Join-Path $Work 'claude-code-install.log'
-    $command = "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; irm $ClaudeCodePs1 | iex"
-    $process = Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$command`"" `
-      -NoNewWindow -PassThru -RedirectStandardOutput $log -RedirectStandardError "$log.err"
-    $null = $process.Handle  # without it, Windows PowerShell can lose the exit code
-    $frames = '|/-\'
-    $i = 0
-    while (-not $process.HasExited) {
-      Write-Host "`r  " -NoNewline
-      Write-Host $frames[$i % 4] -ForegroundColor Cyan -NoNewline
-      Write-Host ' Installing Claude Code first (a minute or two)...' -NoNewline
-      $i += 1
-      Start-Sleep -Milliseconds 200
-    }
-    $process.WaitForExit()
-    Clear-Line
-    if ($process.ExitCode -ne 0) {
+    $code = Invoke-WithSpinner 'Installing Claude Code first (a minute or two)...' "irm $ClaudeCodePs1 | iex" $log
+    if ($code -ne 0) {
       Say "  What Claude Code's installer said:" DarkGray
       foreach ($file in @($log, "$log.err")) {
         if (Test-Path -LiteralPath $file) { Get-Content -LiteralPath $file -Tail 15 | ForEach-Object { Say "    $_" DarkGray } }
@@ -247,6 +258,33 @@ function Install-SurgeAiEmployees {
       }
     }
     return $true
+  }
+
+  # The Claude app, which is where "What to do now" sends a founder: its Code
+  # tab is Claude Code, reading the same skills folder. Installed when it is
+  # not there yet, from Anthropic's per-user package, which needs no
+  # administrator (their full installer asks for one, for Cowork), and never
+  # updated here (it updates itself). A failure is said and the install goes
+  # on, because the terminal works without the app.
+  function Install-ClaudeApp([string]$Work) {
+    if ($env:SURGE_INSTALL_CLAUDE_APP -eq '0') { return }
+    $installed = $null
+    try { $installed = Get-AppxPackage -Name 'Claude' -ErrorAction SilentlyContinue } catch { }
+    if ($installed -or (Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'AnthropicClaude'))) {
+      StepDone 'The Claude app is already installed.'
+      return
+    }
+    $url = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { $ClaudeAppMsixArm64 } else { $ClaudeAppMsixX64 }
+    # Doubled quotes: how a single-quoted PowerShell string holds one, for a
+    # home folder like C:\Users\O'Brien.
+    $package = (Join-Path $Work 'Claude.msix').Replace("'", "''")
+    $command = "`$ErrorActionPreference = 'Stop'; Invoke-WebRequest -UseBasicParsing -Uri '$url' -OutFile '$package'; Add-AppxPackage -Path '$package'"
+    $code = Invoke-WithSpinner 'Installing the Claude app (a minute or two)...' $command (Join-Path $Work 'claude-app-install.log')
+    if ($code -eq 0) {
+      StepDone 'Claude app installed'
+    } else {
+      Say '  Could not install the Claude app. Get it at claude.com/download' DarkGray
+    }
   }
 
   $work = $null
@@ -310,6 +348,7 @@ function Install-SurgeAiEmployees {
     # After the names are checked, so a typo costs nothing; after the staging
     # folder exists, which is where Claude Code's installer writes its log.
     $claudeFresh = Install-ClaudeCode $work
+    Install-ClaudeApp $work
 
     # The archive for this machine's whole team, in roster order.
     $setName = @(Split-Words $SurgeRoster | Where-Object { ($wanted -ccontains $_) -or ($have -ccontains $_) }) -join '_'

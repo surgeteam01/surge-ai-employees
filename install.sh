@@ -11,7 +11,9 @@
 # What it does, and nothing else:
 #   0. installs Claude Code with Anthropic's own installer, if it is not
 #      installed yet, and on a Mac adds ~/.local/bin to your shell's PATH so
-#      the claude command is found (SURGE_INSTALL_CLAUDE_CODE=0 skips this);
+#      the claude command is found (SURGE_INSTALL_CLAUDE_CODE=0 skips this),
+#      and on a Mac or Windows the Claude app, from Anthropic's own download,
+#      if it is not installed yet (SURGE_INSTALL_CLAUDE_APP=0 skips that);
 #   1. downloads the AI Employee skills from the link below;
 #   2. puts each skill folder in Claude Code's skills folder, ~/.claude/skills;
 #   3. puts each employee's README and training guide in ~/.claude/surge;
@@ -333,6 +335,7 @@ main() {
   # After the names are checked, so a typo costs nothing; after the staging
   # folder exists, which is where Claude Code's installer writes its log.
   ensure_claude_code
+  ensure_claude_app
 
   local url status message set_name=''
   if [ "$SURGE_PACK_MODE" = 'public' ]; then
@@ -675,6 +678,108 @@ ensure_claude_code() {
   if ! grep -qs '\.local/bin' "$rc"; then
     printf '\n# Added by the Surge AI Employees installer, so the claude command is found.\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$rc" \
       || say "  ${DIM}Could not add ~/.local/bin to $(pretty "$rc"). If claude is not found, add it yourself.${RESET}"
+  fi
+}
+
+# The Claude app, which is where "What to do now" sends a founder on a Mac or
+# on Windows: its Code tab is Claude Code, reading the same skills folder.
+# Installed here, from Anthropic's own download, when it is not there yet, and
+# never updated (it updates itself). Linux is left alone: its app comes from
+# Anthropic's apt repository, which needs sudo, and this installer asks for
+# nothing. A failure here is said and the install goes on, because the
+# terminal works without the app. SURGE_INSTALL_CLAUDE_APP=0 skips this.
+CLAUDE_APP_DMG='https://claude.ai/api/desktop/darwin/universal/dmg/latest/redirect'
+CLAUDE_APP_MSIX_X64='https://claude.ai/api/desktop/win32/x64/msix/latest/redirect'
+CLAUDE_APP_MSIX_ARM64='https://claude.ai/api/desktop/win32/arm64/msix/latest/redirect'
+ensure_claude_app() {
+  if [ "${SURGE_INSTALL_CLAUDE_APP:-1}" = '0' ]; then return 0; fi
+  local os
+  os="$(uname -s 2>/dev/null || true)"
+  case "$os" in
+    Darwin) claude_app_mac ;;
+    MINGW* | MSYS* | CYGWIN*) claude_app_windows ;;
+  esac
+}
+
+# Runs "$@" in the background with a spinner beside $1's words, its output in
+# $SURGE_WORK/$2.log. Returns its exit status.
+with_spinner() {
+  local words="$1" log="$SURGE_WORK/$2.log" pid frames='|/-\' i=0
+  shift 2
+  if [ ! -t 1 ]; then say "  $words"; fi
+  "$@" </dev/null >"$log" 2>&1 &
+  pid=$!
+  if [ -t 1 ]; then
+    while kill -0 "$pid" 2>/dev/null; do
+      printf '\r  %s%s%s %s' "$CYAN" "${frames:$((i % 4)):1}" "$RESET" "$words"
+      i=$((i + 1))
+      sleep 0.2
+    done
+    printf '\r\033[K'
+  fi
+  wait "$pid"
+}
+
+claude_app_skipped() {
+  say "  ${DIM}Could not install the Claude app ($1). Get it at claude.com/download${RESET}"
+}
+
+# A Mac: the disk image, opened read-only beside the download, and the app
+# copied into /Applications, or ~/Applications where that is not writable.
+claude_app_mac() {
+  local dir
+  for dir in /Applications "$HOME/Applications"; do
+    if [ -d "$dir/Claude.app" ]; then
+      step_done "The Claude app is already installed."
+      return 0
+    fi
+  done
+  local image="$SURGE_WORK/Claude.dmg" mount="$SURGE_WORK/claude-app" target='/Applications' app
+  if ! with_spinner "Installing the Claude app (a minute or two)..." claude-app-download \
+    curl -fsSL --retry 2 -o "$image" "$CLAUDE_APP_DMG"; then
+    claude_app_skipped "the download failed"
+    return 0
+  fi
+  if ! hdiutil attach -nobrowse -readonly -quiet -mountpoint "$mount" "$image" >/dev/null 2>&1; then
+    claude_app_skipped "the download would not open"
+    return 0
+  fi
+  app="$(find "$mount" -maxdepth 1 -name '*.app' -print 2>/dev/null | head -n 1)"
+  if [ ! -w "$target" ]; then target="$HOME/Applications"; mkdir -p "$target"; fi
+  if [ -n "$app" ] && cp -R "$app" "$target/"; then
+    hdiutil detach -quiet "$mount" >/dev/null 2>&1 || true
+    step_done "Claude app installed in $(pretty "$target")"
+  else
+    hdiutil detach -quiet "$mount" >/dev/null 2>&1 || true
+    claude_app_skipped "it could not be copied into $(pretty "$target")"
+  fi
+}
+
+# Git Bash on Windows: Anthropic's per-user package, which needs no
+# administrator. (Their full installer asks for one, for Cowork.)
+claude_app_windows() {
+  if powershell.exe -NoProfile -Command "if (Get-AppxPackage -Name 'Claude' -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }" </dev/null >/dev/null 2>&1 \
+    || [ -e "${LOCALAPPDATA:-$HOME/AppData/Local}/AnthropicClaude" ]; then
+    step_done "The Claude app is already installed."
+    return 0
+  fi
+  local package="$SURGE_WORK/Claude.msix" url="$CLAUDE_APP_MSIX_X64"
+  case "${PROCESSOR_ARCHITECTURE:-}" in ARM64) url="$CLAUDE_APP_MSIX_ARM64" ;; esac
+  if ! with_spinner "Installing the Claude app (a minute or two)..." claude-app-download \
+    curl -fsSL --retry 2 -o "$package" "$url"; then
+    claude_app_skipped "the download failed"
+    return 0
+  fi
+  # A quote in the path (a username like O'Brien) is doubled, which is how a
+  # PowerShell single-quoted string holds one.
+  local windows_path
+  windows_path="$(cygpath -w "$package")"
+  windows_path="${windows_path//\'/\'\'}"
+  if with_spinner "Installing the Claude app (a minute or two)..." claude-app-install \
+    powershell.exe -NoProfile -Command "Add-AppxPackage -Path '$windows_path'"; then
+    step_done "Claude app installed"
+  else
+    claude_app_skipped "Windows refused the package"
   fi
 }
 
