@@ -1,0 +1,432 @@
+#
+# Surge AI Employees: the one-line installer for Windows.
+#
+# In Windows PowerShell (the blue one, not Command Prompt), paste:
+#   irm <link> | iex
+# To install only the AI Employees you name:
+#   & ([scriptblock]::Create((irm <link>))) content-marketer
+# Everything it downloads is in the repository this script came from, so you
+# can read it all first: https://github.com/surgeteam01/surge-ai-employees
+#
+# What it does, and nothing else:
+#   0. installs Claude Code with Anthropic's own installer, if it is not
+#      installed yet, and makes sure the claude command is on your PATH
+#      ($env:SURGE_INSTALL_CLAUDE_CODE = '0' skips this);
+#   1. downloads the AI Employee skills from the link below;
+#   2. puts each skill folder in Claude Code's skills folder, ~\.claude\skills;
+#   3. puts each employee's README and training guide in ~\.claude\surge;
+#   4. records a sha256 of every file it put there, in ~\.claude\surge\checksums;
+#   5. leaves a folder you changed since then where it is, unless this update
+#      changes that folder too. Then your copy goes into ~\.claude\surge\backups
+#      first, as does any folder in the way that it did not put there itself.
+#      It never deletes your own files.
+# No Git, no administrator, nothing left running, and it asks you nothing.
+#
+# It is install.sh, the installer for Mac, Linux and Git Bash, said in
+# PowerShell, so that Windows needs nothing installed first (P32/I55). The two
+# keep the same record in ~\.claude\surge, so either one updates what the
+# other installed. Running the same command again is how you update. It
+# refreshes every AI Employee this installer has put on this machine, not only
+# the one you asked for, so the AI COO always knows your whole team.
+#
+# To install into one project instead of for every project, run it from that
+# project's folder after:  $env:SURGE_SKILLS_DIR = '.claude\skills'
+#
+# (This file is generated from .agents/employees/install.ps1 in surgify-ops and
+# published here with the skills. An edit made here is overwritten by the
+# next publish; the place to change it is surgify-ops.)
+
+# The whole install is this one function, called on the script's last line, so
+# a download cut off halfway runs nothing at all. It is pasted into the
+# founder's own window by `iex`, so it never calls `exit`: that would close the
+# window and the reason with it. A failure is said, and the function returns.
+function Install-SurgeAiEmployees {
+  $SurgePackUrl = 'https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/packs'
+  $SurgeHireUrl = 'https://github.com/surgeteam01/surge-ai-employees'
+  $SurgeEmployees = 'business-strategist content-marketer growth-and-sales brand-and-product'
+  $SurgeRoster = 'business-strategist content-marketer growth-and-sales brand-and-product'
+  $ClaudeCodePs1 = 'https://claude.ai/install.ps1'
+  $ClaudeCodePage = 'https://claude.com/product/claude-code'
+
+  $ErrorActionPreference = 'Stop'
+  $ProgressPreference = 'SilentlyContinue'
+  $Ok = [char]0x2713
+  # Older Windows PowerShell offers TLS 1.0 first, which GitHub refuses.
+  try { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072 } catch { }
+
+  function Say([string]$Text = '', [string]$Color = '') {
+    if ($Color) { Write-Host $Text -ForegroundColor $Color } else { Write-Host $Text }
+  }
+  # A refusal this script words itself, as opposed to anything else that throws.
+  function Fail([string]$Text) { throw [System.InvalidOperationException]::new("SURGE: $Text") }
+
+  # A key or skill folder name, exactly as the pack writes them.
+  function Test-ValidName([string]$Name) { return [bool]($Name -cmatch '^[a-z0-9][a-z0-9-]*$') }
+  function Test-Listed([string]$Word, [string]$List) { return (" $List " -like "* $Word *") -and $Word -ne '' }
+  function Split-Words([string]$List) { return @($List -split '\s+' | Where-Object { $_ -ne '' }) }
+
+  # ~ for the home folder, so the paths printed are the ones people recognise.
+  function Pretty([string]$Path) {
+    if ($Path.StartsWith("$HOME\", [StringComparison]::OrdinalIgnoreCase)) { return '~' + $Path.Substring($HOME.Length) }
+    return $Path
+  }
+
+  # One line per file in folder $Folder, "<sha256>  $Label/<path inside it>",
+  # sorted by path and joined by "`n": the format of ~\.claude\surge\checksums,
+  # byte for byte what install.sh writes, so either installer can check the
+  # other's record. Every file counts except Finder's .DS_Store. $null means
+  # "cannot be checked": a link inside it, a file that cannot be read, or no
+  # file at all. It only reads.
+  function Get-Checksums([string]$Folder, [string]$Label) {
+    try {
+      $root = (Get-Item -LiteralPath $Folder -Force).FullName.TrimEnd('\')
+      $paths = New-Object System.Collections.Generic.List[string]
+      foreach ($item in @(Get-ChildItem -LiteralPath $root -Recurse -Force)) {
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $null }
+        if ($item.PSIsContainer -or $item.Name -eq '.DS_Store') { continue }
+        $paths.Add($item.FullName.Substring($root.Length + 1).Replace('\', '/'))
+      }
+      if ($paths.Count -eq 0) { return $null }
+      $sorted = $paths.ToArray()
+      [Array]::Sort($sorted, [StringComparer]::Ordinal)
+      $lines = foreach ($relative in $sorted) {
+        $hash = (Get-FileHash -LiteralPath (Join-Path $root $relative) -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  $Label/$relative"
+      }
+      return (@($lines) -join "`n")
+    } catch {
+      return $null
+    }
+  }
+
+  # The record's lines for label $Label, out of the record's lines $Lines.
+  function Get-RecordedLines([string]$Label, [string[]]$Lines) {
+    $picked = @($Lines | Where-Object { $_.Length -gt 66 -and $_.Substring(66).StartsWith("$Label/", [StringComparison]::Ordinal) })
+    return ($picked -join "`n")
+  }
+
+  # What to do with folder $Target, which an earlier run put here under
+  # $Label, given the incoming version's lines and the record's. As install.sh:
+  # replace, keep, both, unrecorded or unreadable.
+  function Get-Verdict([string]$Label, [string]$Target, [string]$Incoming, [string]$Recorded) {
+    $disk = Get-Checksums $Target $Label
+    if ($null -eq $disk) { return 'unreadable' }
+    if ($Incoming -and $disk -ceq $Incoming) { return 'replace' }
+    if (-not $Recorded) { return 'unrecorded' }
+    if ($disk -ceq $Recorded) { return 'replace' }
+    if ($Incoming -ceq $Recorded) { return 'keep' }
+    return 'both'
+  }
+
+  function Get-Shown([string]$Label) {
+    if ($Label.StartsWith('surge/')) { return "$($Label.Substring(6))'s training guide" }
+    return $Label.Substring($Label.IndexOf('/') + 1)
+  }
+  function Get-BackedUpAt([string]$Label, [string]$Backup) {
+    if ($Label.StartsWith('surge/')) { return Join-Path (Join-Path $Backup 'guides') $Label.Substring(6) }
+    return Join-Path $Backup $Label.Substring($Label.IndexOf('/') + 1)
+  }
+  function Get-Spoken([string[]]$Labels) {
+    $names = @($Labels | ForEach-Object { Get-Shown $_ })
+    if ($names.Count -le 1) { return ($names -join '') }
+    return (($names[0..($names.Count - 2)] -join ', ') + ' and ' + $names[-1])
+  }
+
+  # Text with "`n" line ends and no byte-order mark, as install.sh writes it.
+  function Write-Lf([string]$Path, [string]$Text) {
+    [IO.File]::WriteAllText($Path, $Text, (New-Object System.Text.UTF8Encoding($false)))
+  }
+
+  function Find-Claude {
+    $exe = Join-Path $HOME '.local\bin\claude.exe'
+    if (Test-Path -LiteralPath $exe) { return $exe }
+    $command = Get-Command claude -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($command) { return $command.Source }
+    return $null
+  }
+
+  # Claude Code is where the AI Employees work, so a founder who does not have
+  # it yet gets it here, from Anthropic's own installer, run in a PowerShell of
+  # its own: that installer ends with `exit`, which here would close this
+  # window. Already installed: nothing is touched. Returns $true when it
+  # installed it.
+  function Install-ClaudeCode {
+    if ($env:SURGE_INSTALL_CLAUDE_CODE -eq '0') { return $false }
+    if (Find-Claude) {
+      Say "  $Ok Claude Code is already installed." Green
+      return $false
+    }
+    Say '  Installing Claude Code first, where your AI Employees work. This takes a minute or two...'
+    Say ''
+    $ErrorActionPreference = 'Continue'
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; irm $ClaudeCodePs1 | iex" | Out-Host
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    if ($code -ne 0) { Fail "Claude Code did not install. Install it from $ClaudeCodePage, then run this command again." }
+    if (-not (Find-Claude)) { Fail "Claude Code's installer finished, but there is no claude command. Install it from $ClaudeCodePage, then run this command again." }
+
+    # The claude command, in this window and in every new one. This window:
+    # $env:Path, which `iex` lets this script change. New windows: the user's
+    # own Path in the registry, read and written unexpanded so an entry like
+    # %USERPROFILE%\bin keeps working; setting a variable through .NET
+    # afterwards is what tells Windows that the environment changed.
+    $bin = Join-Path $HOME '.local\bin'
+    if (Test-Path -LiteralPath (Join-Path $bin 'claude.exe')) {
+      if (-not (($env:Path -split ';') -contains $bin)) { $env:Path = "$bin;$env:Path" }
+      try {
+        $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
+        $userPath = [string]$key.GetValue('Path', '', [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+        $entries = @($userPath -split ';' | Where-Object { $_ -ne '' })
+        $known = $entries | Where-Object { [Environment]::ExpandEnvironmentVariables($_).TrimEnd('\') -ieq $bin }
+        if (-not $known) {
+          $key.SetValue('Path', ((@($entries) + $bin) -join ';'), [Microsoft.Win32.RegistryValueKind]::ExpandString)
+          [Environment]::SetEnvironmentVariable('SURGE_INSTALLER', '1', 'User')
+          [Environment]::SetEnvironmentVariable('SURGE_INSTALLER', $null, 'User')
+        }
+        $key.Close()
+      } catch {
+        Say "  Could not add $(Pretty $bin) to your Path. If claude is not found in a new window, add it yourself." DarkGray
+      }
+    }
+    return $true
+  }
+
+  $work = $null
+  try {
+    if (-not $HOME) { Fail 'There is no home folder to install to.' }
+    $tar = Join-Path $env:SystemRoot 'System32\tar.exe'
+    if (-not (Test-Path -LiteralPath $tar)) { Fail 'This needs tar.exe, which comes with Windows 10 (version 1803) and later. Update Windows, then run this command again.' }
+
+    $claudeDir = if ($env:CLAUDE_CONFIG_DIR) { $env:CLAUDE_CONFIG_DIR } else { Join-Path $HOME '.claude' }
+    $skillsDir = if ($env:SURGE_SKILLS_DIR) { $env:SURGE_SKILLS_DIR } else { Join-Path $claudeDir 'skills' }
+    if (-not [IO.Path]::IsPathRooted($skillsDir)) { $skillsDir = Join-Path (Get-Location).ProviderPath $skillsDir }
+    $skillsDir = [IO.Path]::GetFullPath($skillsDir).TrimEnd('\')
+    $parent = Split-Path -Parent $skillsDir
+    $surgeDir = Join-Path $parent 'surge'
+    $record = Join-Path $surgeDir 'installed'
+
+    Say ''
+    Say 'Surge AI Employees' White
+    Say ''
+    $claudeFresh = Install-ClaudeCode
+
+    # What this installer put here before: the employees to keep current, and
+    # the skill folders it may replace without a backup while they still match.
+    $have = @(); $oldSkills = @()
+    if (Test-Path -LiteralPath $record -PathType Leaf) {
+      foreach ($line in [IO.File]::ReadAllLines($record)) {
+        $parts = @($line.Trim() -split '\s+')
+        if ($parts.Count -lt 2 -or -not (Test-ValidName $parts[1])) { continue }
+        if ($parts[0] -ceq 'employee') { $have += $parts[1] }
+        elseif ($parts[0] -ceq 'skill') { $oldSkills += $parts[1] }
+      }
+    }
+
+    # The AI Employees named after the command, else every one. Each is
+    # checked against the roster before it can reach a URL. `all` is the roster.
+    $wanted = @()
+    $asked = if ($args.Count -gt 0) { @($args | ForEach-Object { [string]$_ }) } else { Split-Words $SurgeEmployees }
+    foreach ($key in $asked) {
+      if ($key -ceq 'all') { $wanted = Split-Words $SurgeRoster; break }
+      if (-not (Test-ValidName $key) -or -not (Test-Listed $key $SurgeRoster)) {
+        if (Test-ValidName $key) { Fail "`"$key`" is not an AI Employee. Choose from: $SurgeRoster (or all)." }
+        Fail "That is not an AI Employee's name. Choose from: $SurgeRoster (or all)."
+      }
+      if (-not ($wanted -ccontains $key)) { $wanted += $key }
+    }
+    if ($wanted.Count -eq 0) { Fail 'Name at least one AI Employee, or run it with no name for the whole team.' }
+    $SurgeEmployees = $wanted -join ' '
+
+    $sumsFile = Join-Path $surgeDir 'checksums'
+    $oldSums = @()
+    if (Test-Path -LiteralPath $sumsFile -PathType Leaf) {
+      try { $oldSums = @([IO.File]::ReadAllText($sumsFile) -split "`n" | Where-Object { $_ -ne '' }) } catch { $oldSums = @() }
+    }
+
+    # Beside the skills folder, never inside it, so Claude Code cannot mistake
+    # a half-unpacked download for a skill; on the same disk, so every move
+    # below is a rename.
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    $work = Join-Path $parent ('.surge-install.' + [IO.Path]::GetRandomFileName().Replace('.', ''))
+    New-Item -ItemType Directory -Path $work | Out-Null
+
+    # The archive for this machine's whole team, in roster order.
+    $setName = @(Split-Words $SurgeRoster | Where-Object { ($wanted -ccontains $_) -or ($have -ccontains $_) }) -join '_'
+    $url = "$SurgePackUrl/$setName.tar.gz"
+    $archive = Join-Path $work 'pack.tar.gz'
+    Say '  Downloading your AI Employees...'
+    try {
+      Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $archive -TimeoutSec 120
+    } catch {
+      $response = $_.Exception.Response
+      if ($response) {
+        Fail "No download at $url (HTTP $([int]$response.StatusCode)). If the AI Employees were updated in the last few minutes, wait and run the command again."
+      }
+      Fail 'Could not reach Surge to download your AI Employees. Check your connection and run the command again.'
+    }
+
+    Say '  Downloaded. Unpacking and checking every file...'
+    $pack = Join-Path $work 'pack'
+    New-Item -ItemType Directory -Path $pack | Out-Null
+    $ErrorActionPreference = 'Continue'
+    & $tar -xzmf $archive -C $pack 2>&1 | Out-Null
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = 'Stop'
+    if ($code -ne 0) { Fail 'The download arrived damaged. Run the command again.' }
+    $packRecord = Join-Path $pack 'surge\installed'
+    if (-not (Test-Path -LiteralPath $packRecord -PathType Leaf)) { Fail 'The download is missing its install record. Run the command again.' }
+
+    $newSkills = @(); $employees = @()
+    foreach ($line in [IO.File]::ReadAllLines($packRecord)) {
+      $parts = @($line.Trim() -split '\s+', 4)
+      if ($parts[0] -ceq 'skill') {
+        if ($parts.Count -lt 2 -or -not (Test-ValidName $parts[1]) -or -not (Test-Path -LiteralPath (Join-Path $pack "skills\$($parts[1])\SKILL.md") -PathType Leaf)) {
+          Fail "The download is incomplete ($($parts[1])). Run the command again."
+        }
+        $newSkills += $parts[1]
+      } elseif ($parts[0] -ceq 'employee' -and $parts.Count -ge 4 -and (Test-ValidName $parts[1])) {
+        $how = if ($wanted -ccontains $parts[1]) { 'installed' } else { 'updated' }
+        $employees += , @($parts[3], "$how, pack $($parts[2])")
+      }
+    }
+    if ($newSkills.Count -eq 0) { Fail 'The download holds no skills. Run the command again.' }
+    New-Item -ItemType Directory -Force -Path $skillsDir, $surgeDir | Out-Null
+
+    # Every folder this run puts in place: each skill folder, and each
+    # employee's folder of README, TRAINING and VERSION.
+    $labels = @($newSkills | ForEach-Object { "skills/$_" })
+    foreach ($dir in @(Get-ChildItem -LiteralPath (Join-Path $pack 'surge') -Directory -Force)) {
+      if (Test-ValidName $dir.Name) { $labels += "surge/$($dir.Name)" }
+    }
+
+    # Put each one in place, deciding first what to do with what is there,
+    # exactly as install.sh does; its comments say why.
+    $sums = New-Object System.Text.StringBuilder
+    $backup = $null
+    $moved = @(); $both = @(); $kept = @(); $unrecorded = @()
+    foreach ($label in $labels) {
+      $base = $label.Substring($label.IndexOf('/') + 1)
+      if ($label.StartsWith('skills/')) {
+        $target = Join-Path $skillsDir $base; $staged = Join-Path $pack "skills\$base"; $parked = Join-Path $work "replaced-$base"
+      } else {
+        $target = Join-Path $surgeDir $base; $staged = Join-Path $pack "surge\$base"; $parked = Join-Path $work "replaced-docs-$base"
+      }
+      $incoming = Get-Checksums $staged $label
+      if ($incoming) { [void]$sums.Append($incoming).Append("`n") }
+
+      $item = Get-Item -LiteralPath $target -Force -ErrorAction SilentlyContinue
+      if ($item -and ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { $verdict = 'foreign' }
+      elseif (-not $item) { $verdict = 'nothing' }
+      elseif ($label.StartsWith('skills/') -and -not ($oldSkills -ccontains $base)) { $verdict = 'foreign' }
+      else { $verdict = Get-Verdict $label $target $incoming (Get-RecordedLines $label $oldSums) }
+
+      try {
+        switch ($verdict) {
+          'nothing' { }
+          'replace' { Move-Item -LiteralPath $target -Destination $parked }
+          'keep' { $kept += $label }
+          default {
+            if (-not $backup) { $backup = Join-Path $surgeDir ('backups\' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
+            $at = Get-BackedUpAt $label $backup
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $at) | Out-Null
+            Move-Item -LiteralPath $target -Destination $at
+            switch ($verdict) {
+              'both' { $both += $label }
+              'unrecorded' { $unrecorded += $label }
+              default { $moved += $label }
+            }
+          }
+        }
+        if ($verdict -ne 'keep') { Move-Item -LiteralPath $staged -Destination $target }
+      } catch {
+        if ((Test-Path -LiteralPath $parked) -and -not (Test-Path -LiteralPath $target)) {
+          try { Move-Item -LiteralPath $parked -Destination $target } catch { }
+        }
+        Fail "Could not write $(Pretty $target). If Claude Code is open, close it, then run the command again."
+      }
+    }
+    Move-Item -LiteralPath $packRecord -Destination $record -Force
+    $sumsStaged = Join-Path $work 'checksums'
+    Write-Lf $sumsStaged $sums.ToString()
+    Move-Item -LiteralPath $sumsStaged -Destination $sumsFile -Force
+
+    # A skill this installer put here that is no longer in any AI Employee.
+    # Left alone: a founder may still be using it, and it is theirs to remove.
+    $retired = @($oldSkills | Where-Object { -not ($newSkills -ccontains $_) -and (Test-Path -LiteralPath (Join-Path $skillsDir $_)) })
+
+    Say ''
+    foreach ($employee in $employees) {
+      Write-Host "  $Ok " -ForegroundColor Green -NoNewline
+      Write-Host $employee[0] -ForegroundColor White -NoNewline
+      Write-Host " $($employee[1])" -ForegroundColor DarkGray
+    }
+    Say '    with The AI COO and the Business Brain, which come with every AI Employee.' DarkGray
+    Say ''
+    Say "  Skills:          $(Pretty $skillsDir)"
+    Say "  Training guides: $(Pretty $surgeDir)"
+    if ($moved.Count -gt 0) {
+      Say ''
+      Say '  Moved aside first, because this installer did not put them there:'
+      foreach ($label in $moved) { Say "    $(Get-Shown $label)  ->  $(Pretty (Get-BackedUpAt $label $backup))" }
+    }
+    foreach ($label in $both) {
+      Say ''
+      Say "  You had changed $(Get-Shown $label), and this update changes it too. Your version is in $(Pretty (Get-BackedUpAt $label $backup))"
+    }
+    if ($kept.Count -gt 0) {
+      Say ''
+      Say "  Left as you changed them (this update has nothing new for them): $(Get-Spoken $kept)"
+    }
+    if ($unrecorded.Count -gt 0) {
+      Say ''
+      Say "  Kept a copy of $(Get-Spoken $unrecorded) in $(Pretty $backup):"
+      Say '  earlier installs did not record what they put here, so this one cannot tell'
+      Say '  whether you changed them. It will not happen again.'
+    }
+    if ($retired.Count -gt 0) {
+      Say ''
+      Say '  No longer part of your AI Employees, and left where they are:'
+      foreach ($dir in $retired) { Say "    $(Pretty (Join-Path $skillsDir $dir))  (delete it if you no longer use it)" }
+    }
+    Say ''
+    Say '  Next' White
+    if ($claudeFresh) {
+      Say '    1. In this window, type  claude  and press Enter.'
+      Say '       It opens your browser: sign in with your paid Claude account (Pro or higher).'
+      Say '       That starts a new Claude Code session, which loads the new skills.'
+    } else {
+      Say '    1. Start a new Claude Code session, so it loads the new skills:'
+      Say '       type  claude  and press Enter.'
+    }
+    Say '    2. Ask it:  Who do I have on my team?'
+    Say '    3. Then:    Set up my business brain.'
+    Say ''
+    if ($wanted.Count -gt 1) { Say '  Before you brief them, read their training guides:' } else { Say '  Before you brief them, read the training guide:' }
+    foreach ($key in $wanted) {
+      $guide = Join-Path $surgeDir "$key\TRAINING.md"
+      if (Test-Path -LiteralPath $guide) { Say "    $(Pretty $guide)" }
+    }
+    Say ''
+    Say '  To update later, run the same command again. It keeps what you changed.' DarkGray
+    Say "  This installs for Claude Code. On the Claude website or desktop app, upload the zips from $SurgeHireUrl instead." DarkGray
+    Say ''
+  } catch {
+    $message = $_.Exception.Message
+    Say ''
+    if ($message.StartsWith('SURGE: ')) {
+      Say "  $($message.Substring(7))" Red
+    } else {
+      Say "  Something went wrong: $message" Red
+      Say '  Run the command again. If it happens again, post this message in the community.' Red
+    }
+    Say ''
+    Say "  The AI Employees repository, with the install guide: $SurgeHireUrl"
+    Say ''
+  } finally {
+    if ($work -and (Split-Path -Leaf $work).StartsWith('.surge-install.')) {
+      Remove-Item -LiteralPath $work -Recurse -Force -ErrorAction SilentlyContinue
+    }
+  }
+}
+
+Install-SurgeAiEmployees @args

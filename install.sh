@@ -9,6 +9,9 @@
 # you can read it all first: https://github.com/surgeteam01/surge-ai-employees
 #
 # What it does, and nothing else:
+#   0. installs Claude Code with Anthropic's own installer, if it is not
+#      installed yet, and on a Mac adds ~/.local/bin to your shell's PATH so
+#      the claude command is found (SURGE_INSTALL_CLAUDE_CODE=0 skips this);
 #   1. downloads the AI Employee skills from the link below;
 #   2. puts each skill folder in Claude Code's skills folder, ~/.claude/skills;
 #   3. puts each employee's README and training guide in ~/.claude/surge;
@@ -238,6 +241,7 @@ main() {
   say ""
   say "${BOLD}Surge AI Employees${RESET}"
   say ""
+  ensure_claude_code
 
   # What this installer put here before: the employees to keep current, and
   # the skill folders it may replace without a backup while they still match
@@ -497,7 +501,14 @@ main() {
   fi
   say ""
   say "  ${BOLD}Next${RESET}"
-  say "    1. Start a new Claude Code session, so it loads the new skills."
+  if [ -n "$CLAUDE_FRESH" ]; then
+    say "    1. Close this window and open a new one. Type  claude  and press Enter."
+    say "       It opens your browser: sign in with your paid Claude account (Pro or higher)."
+    say "       That starts a new Claude Code session, which loads the new skills."
+  else
+    say "    1. Start a new Claude Code session, so it loads the new skills:"
+    say "       in a new window, type  claude  and press Enter."
+  fi
   say "    2. Ask it:  Who do I have on my team?"
   say "    3. Then:    Set up my business brain."
   say ""
@@ -520,6 +531,61 @@ main() {
     say "  This installs for Claude Code. On the Claude website or desktop app, download the zip from that page instead.${RESET}"
   fi
   say ""
+}
+
+# Claude Code is where the AI Employees work, so a founder who does not have
+# it yet gets it here, from Anthropic's own installer, instead of as a step of
+# its own in the guide (P32/I55). Where it is already installed nothing is
+# touched. SURGE_INSTALL_CLAUDE_CODE=0 skips this. Sets CLAUDE_FRESH to `yes`
+# when it installed it, so the last words can say how to open it the first time.
+# Defined after main(), not before it: it downloads, and a test holds
+# everything above main() to touching neither the disk nor the network.
+CLAUDE_FRESH=''
+CLAUDE_CODE_SH='https://claude.ai/install.sh'
+CLAUDE_CODE_PS1='https://claude.ai/install.ps1'
+ensure_claude_code() {
+  if [ "${SURGE_INSTALL_CLAUDE_CODE:-1}" = '0' ]; then return 0; fi
+  if command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ] || [ -x "$HOME/.local/bin/claude.exe" ]; then
+    say "  ${GREEN}✓${RESET} Claude Code is already installed."
+    return 0
+  fi
+  say "  Installing Claude Code first, where your AI Employees work. This takes a minute or two..."
+  say ""
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW* | MSYS* | CYGWIN*)
+      # Git Bash on Windows: Anthropic's bash installer refuses Windows, so
+      # this runs their PowerShell one. </dev/null: the script being read on
+      # stdin is this one, and it is not PowerShell's to read.
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm $CLAUDE_CODE_PS1 | iex" </dev/null \
+        || fail "Claude Code did not install. Install it from https://claude.com/product/claude-code, then run this command again."
+      ;;
+    *)
+      curl -fsSL "$CLAUDE_CODE_SH" | bash \
+        || fail "Claude Code did not install. Install it from https://claude.com/product/claude-code, then run this command again."
+      ;;
+  esac
+  if [ ! -x "$HOME/.local/bin/claude" ] && [ ! -x "$HOME/.local/bin/claude.exe" ] && ! command -v claude >/dev/null 2>&1; then
+    fail "Claude Code's installer finished, but there is no claude command. Install it from https://claude.com/product/claude-code, then run this command again."
+  fi
+  CLAUDE_FRESH='yes'
+
+  # A new Terminal on a Mac does not look in ~/.local/bin, where Claude Code
+  # puts `claude`, so typing it there would say "command not found". One line
+  # in the shell's startup file fixes that, added only when no line there
+  # mentions that folder yet. (Windows: Anthropic's installer sets the PATH.)
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW* | MSYS* | CYGWIN*) return 0 ;;
+  esac
+  local rc
+  case "$(basename "${SHELL:-}")" in
+    zsh) rc="$HOME/.zshrc" ;;
+    bash) if [ "$(uname -s)" = 'Darwin' ]; then rc="$HOME/.bash_profile"; else rc="$HOME/.bashrc"; fi ;;
+    *) return 0 ;;
+  esac
+  if ! grep -qs '\.local/bin' "$rc"; then
+    printf '\n# Added by the Surge AI Employees installer, so the claude command is found.\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$rc" \
+      || say "  ${DIM}Could not add ~/.local/bin to $(pretty "$rc"). If claude is not found, add it yourself.${RESET}"
+  fi
 }
 
 main "$@"

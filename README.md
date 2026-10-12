@@ -11,8 +11,19 @@ read `install.sh` before you run it — that is what a public repository is for.
 
 ## Install into Claude Code — one command
 
+You need nothing installed first: if Claude Code is not on your computer yet,
+the command installs it too, with Anthropic's own installer.
+
+**Mac** (or Linux, or WSL): open Terminal and paste
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/install.sh | bash
+```
+
+**Windows**: open Windows PowerShell (the blue one, not Command Prompt) and paste
+
+```powershell
+irm https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/install.ps1 | iex
 ```
 
 That installs the whole team. To install one AI Employee, or a few, name them:
@@ -22,20 +33,27 @@ curl -fsSL https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main
 curl -fsSL https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/install.sh | bash -s -- business-strategist growth-and-sales
 ```
 
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/install.ps1))) content-marketer
+```
+
 The keys are `business-strategist`, `content-marketer`, `growth-and-sales`, `brand-and-product`, or `all`.
 
-It works on macOS, Linux, WSL and Windows under Git Bash. It puts each skill in
+`install.sh` also works on Windows under Git Bash. Both put each skill in
 `~/.claude/skills`, each AI Employee's training guide in `~/.claude/surge`, and
-asks you nothing. No sudo, nothing left running. To install into one project
-only, run it from that project's folder with `SURGE_SKILLS_DIR=.claude/skills`
-in front of `bash`.
+ask you nothing. No sudo or administrator, nothing left running. To install
+into one project only, run it from that project's folder with
+`SURGE_SKILLS_DIR=.claude/skills` in front of `bash` (in PowerShell, first
+`$env:SURGE_SKILLS_DIR = '.claude\skills'`). To skip installing Claude Code,
+set `SURGE_INSTALL_CLAUDE_CODE=0` the same way.
 
 **To update, run the same command again.** It refreshes every AI Employee it
 has installed on that machine, keeps anything you changed when the update has
 nothing new for it, and when the update changes a file you also changed, it
 puts your copy in `~/.claude/surge/backups` first and tells you where.
 
-Then start a new Claude Code session and ask: **Who do I have on my team?**
+Then type `claude` in a new window (the first time, it signs you in with your
+Claude account in the browser) and ask: **Who do I have on my team?**
 
 ## Install on the Claude website or desktop app
 
@@ -70,7 +88,8 @@ generic advice.
 
 | Path | What it is |
 |---|---|
-| `install.sh` | The installer. Read it before running it, if you like — it is the whole thing. |
+| `install.sh` | The installer for Mac, Linux and Git Bash. Read it before running it, if you like — it is the whole thing. |
+| `install.ps1` | The same installer for Windows PowerShell. |
 | `skills/` | Every skill in any AI Employee, exactly as the installer lays them out, with the COO that knows the whole team. |
 | `employees/<key>/` | Each AI Employee's guides. |
 | `packs/` | The archives the installer downloads, one per combination of AI Employees. Not for people. |
