@@ -56,13 +56,37 @@ SURGE_EMPLOYEES='business-strategist content-marketer growth-and-sales brand-and
 SURGE_ROSTER='business-strategist content-marketer growth-and-sales brand-and-product'
 
 if [ -t 1 ]; then
-  BOLD=$'\033[1m'; DIM=$'\033[2m'; GREEN=$'\033[32m'; RED=$'\033[31m'; RESET=$'\033[0m'
+  BOLD=$'\033[1m'; DIM=$'\033[2m'; GREEN=$'\033[32m'; RED=$'\033[31m'; CYAN=$'\033[36m'; RESET=$'\033[0m'
 else
-  BOLD=''; DIM=''; GREEN=''; RED=''; RESET=''
+  BOLD=''; DIM=''; GREEN=''; RED=''; CYAN=''; RESET=''
 fi
 SURGE_WORK=''
 
 say() { printf '%s\n' "$*"; }
+
+# A box around plain lines, for the title and for what to do next. Padding
+# counts bytes, so what goes inside stays ASCII; the colour is the border's.
+BOX_WIDTH=60
+BOX_RULE='────────────────────────────────────────────────────────────'
+box() {
+  local line
+  say "  ${CYAN}┌${BOX_RULE}┐${RESET}"
+  for line in "$@"; do
+    printf '  %s│%s  %-*s%s│%s\n' "$CYAN" "$RESET" $((BOX_WIDTH - 2)) "$line" "$CYAN" "$RESET"
+  done
+  say "  ${CYAN}└${BOX_RULE}┘${RESET}"
+}
+
+# One step of the install: `step_start` says what is happening, `step_done`
+# replaces it with a tick. Where the output is not a terminal (a log, a test)
+# only the tick line is written.
+step_start() {
+  if [ -t 1 ]; then printf '  %s·%s %s' "$DIM" "$RESET" "$*"; fi
+}
+step_done() {
+  if [ -t 1 ]; then printf '\r\033[K'; fi
+  say "  ${GREEN}✓${RESET} $*"
+}
 fail() {
   printf '\n%s  %s%s\n\n' "$RED" "$*" "$RESET" >&2
   if [ "$SURGE_PACK_MODE" = 'public' ]; then
@@ -239,9 +263,8 @@ main() {
   record="$surge_dir/installed"
 
   say ""
-  say "${BOLD}Surge AI Employees${RESET}"
+  box "Surge AI Employees" "Your AI team is moving in."
   say ""
-  ensure_claude_code
 
   # What this installer put here before: the employees to keep current, and
   # the skill folders it may replace without a backup while they still match
@@ -303,6 +326,10 @@ main() {
   SURGE_WORK="$(mktemp -d "$(dirname "$skills_dir")/.surge-install.XXXXXX")"
   trap cleanup EXIT
 
+  # After the names are checked, so a typo costs nothing; after the staging
+  # folder exists, which is where Claude Code's installer writes its log.
+  ensure_claude_code
+
   local url status message set_name=''
   if [ "$SURGE_PACK_MODE" = 'public' ]; then
     # The archive for this machine's whole team: the employees asked for and
@@ -317,7 +344,7 @@ main() {
     url="$SURGE_PACK_URL"
     if [ -n "$have" ]; then url="$url?have=$have"; fi
   fi
-  say "  Downloading your AI Employees..."
+  step_start "Downloading your AI Employees..."
   status="$(curl -sS -L --retry 2 --connect-timeout 15 -o "$SURGE_WORK/pack.tar.gz" -w '%{http_code}' "$url")" \
     || fail "Could not reach Surge to download your AI Employees. Check your connection and run the command again."
   if [ "$status" != "200" ]; then
@@ -331,7 +358,8 @@ main() {
     fail "${message:-The download was refused (HTTP $status).}"
   fi
 
-  say "  Downloaded. Unpacking and checking every file, which can take a minute on Windows..."
+  step_done "Downloaded your AI Employees"
+  step_start "Unpacking and checking every file, which can take a minute on Windows..."
 
   mkdir "$SURGE_WORK/pack"
   tar -xzmf "$SURGE_WORK/pack.tar.gz" -C "$SURGE_WORK/pack" 2>/dev/null \
@@ -444,6 +472,9 @@ main() {
     printf '%s' "$sums" > "$SURGE_WORK/checksums"
     mv "$SURGE_WORK/checksums" "$sums_file"
   fi
+  local skill_count=0
+  for dir in $new_skills; do skill_count=$((skill_count + 1)); done
+  step_done "Moved them in: $skill_count skills, every file checked"
 
   # A skill this installer put here that is no longer in any AI Employee.
   # Left alone: a founder may still be using it, and it is theirs to remove.
@@ -455,11 +486,12 @@ main() {
   done
 
   say ""
-  printf '%s' "$employees" | sed 's/^/  /'
-  say "    ${DIM}with The AI COO and the Business Brain, which come with every AI Employee.${RESET}"
+  say "  ${BOLD}Your team${RESET}"
+  printf '%s' "$employees" | sed 's/^/    /'
+  say "    ${CYAN}+${RESET} ${DIM}The AI COO and the Business Brain, who come with every AI Employee${RESET}"
   say ""
-  say "  Skills:          $(pretty "$skills_dir")"
-  say "  Training guides: $(pretty "$surge_dir")"
+  say "  ${DIM}Skills:          $(pretty "$skills_dir")${RESET}"
+  say "  ${DIM}Training guides: $(pretty "$surge_dir")${RESET}"
   if [ -n "${CLAUDE_CONFIG_DIR:-}" ] && [ -z "${SURGE_SKILLS_DIR:-}" ]; then
     say "  ${DIM}(CLAUDE_CONFIG_DIR is set, so they went there rather than ~/.claude.)${RESET}"
   fi
@@ -500,17 +532,18 @@ main() {
     for dir in $retired; do say "    $(pretty "$skills_dir/$dir")  ${DIM}(delete it if you no longer use it)${RESET}"; done
   fi
   say ""
-  say "  ${BOLD}Next${RESET}"
+  say "  ${BOLD}What to do now${RESET}"
   if [ -n "$CLAUDE_FRESH" ]; then
-    say "    1. Close this window and open a new one. Type  claude  and press Enter."
-    say "       It opens your browser: sign in with your paid Claude account (Pro or higher)."
-    say "       That starts a new Claude Code session, which loads the new skills."
+    box "1. Close this window and open a new one." \
+      "2. Type  claude  and press Enter." \
+      "3. In the browser, sign in with your paid Claude account." \
+      "4. Ask:   Who do I have on my team?" \
+      "5. Then:  Set up my business brain."
   else
-    say "    1. Start a new Claude Code session, so it loads the new skills:"
-    say "       in a new window, type  claude  and press Enter."
+    box "1. Start a new Claude Code session: type  claude" \
+      "2. Ask:   Who do I have on my team?" \
+      "3. Then:  Set up my business brain."
   fi
-  say "    2. Ask it:  Who do I have on my team?"
-  say "    3. Then:    Set up my business brain."
   say ""
   local guides=0
   for key in $SURGE_EMPLOYEES; do guides=$((guides + 1)); done
@@ -546,41 +579,67 @@ CLAUDE_CODE_PS1='https://claude.ai/install.ps1'
 ensure_claude_code() {
   if [ "${SURGE_INSTALL_CLAUDE_CODE:-1}" = '0' ]; then return 0; fi
   if command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ] || [ -x "$HOME/.local/bin/claude.exe" ]; then
-    say "  ${GREEN}✓${RESET} Claude Code is already installed."
+    step_done "Claude Code is already installed."
     return 0
   fi
-  say "  Installing Claude Code first, where your AI Employees work. This takes a minute or two..."
-  say ""
-  case "$(uname -s 2>/dev/null || true)" in
+
+  # Anthropic's installer runs in the background with its words in a log,
+  # shown only if it fails: they are written for developers ("not in your
+  # PATH", which this function then fixes), and a Windows console shows its
+  # symbols as noise. </dev/null: the script being read on stdin is this one.
+  local os log pid frames='|/-\' i=0 claude_bin version
+  os="$(uname -s 2>/dev/null || true)"
+  log="$SURGE_WORK/claude-code-install.log"
+  if [ ! -t 1 ]; then say "  Installing Claude Code first, where your AI Employees work."; fi
+  case "$os" in
     MINGW* | MSYS* | CYGWIN*)
       # Git Bash on Windows: Anthropic's bash installer refuses Windows, so
-      # this runs their PowerShell one. </dev/null: the script being read on
-      # stdin is this one, and it is not PowerShell's to read.
-      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm $CLAUDE_CODE_PS1 | iex" </dev/null \
-        || fail "Claude Code did not install. Install it from https://claude.com/product/claude-code, then run this command again."
+      # this runs their PowerShell one.
+      powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "irm $CLAUDE_CODE_PS1 | iex" </dev/null >"$log" 2>&1 &
       ;;
     *)
-      curl -fsSL "$CLAUDE_CODE_SH" | bash \
-        || fail "Claude Code did not install. Install it from https://claude.com/product/claude-code, then run this command again."
+      { curl -fsSL "$CLAUDE_CODE_SH" | bash; } </dev/null >"$log" 2>&1 &
       ;;
   esac
-  if [ ! -x "$HOME/.local/bin/claude" ] && [ ! -x "$HOME/.local/bin/claude.exe" ] && ! command -v claude >/dev/null 2>&1; then
-    fail "Claude Code's installer finished, but there is no claude command. Install it from https://claude.com/product/claude-code, then run this command again."
+  pid=$!
+  if [ -t 1 ]; then
+    while kill -0 "$pid" 2>/dev/null; do
+      printf '\r  %s%s%s Installing Claude Code first (a minute or two)...' "$CYAN" "${frames:$((i % 4)):1}" "$RESET"
+      i=$((i + 1))
+      sleep 0.2
+    done
+    printf '\r\033[K'
   fi
+  if ! wait "$pid"; then
+    say "  ${DIM}What Claude Code's installer said:${RESET}"
+    tail -n 15 "$log" | sed 's/^/    /'
+    fail "Claude Code did not install. Install it from https://claude.com/product/claude-code, then run this command again."
+  fi
+  claude_bin="$HOME/.local/bin/claude"
+  if [ -x "$claude_bin.exe" ]; then claude_bin="$claude_bin.exe"; fi
+  if [ ! -x "$claude_bin" ]; then
+    claude_bin="$(command -v claude 2>/dev/null || true)"
+    [ -n "$claude_bin" ] \
+      || fail "Claude Code's installer finished, but there is no claude command. Install it from https://claude.com/product/claude-code, then run this command again."
+  fi
+  version="$("$claude_bin" --version 2>/dev/null | awk '{ print $1; exit }' || true)"
+  step_done "Claude Code installed${version:+ ($version)}"
   CLAUDE_FRESH='yes'
 
-  # A new Terminal on a Mac does not look in ~/.local/bin, where Claude Code
-  # puts `claude`, so typing it there would say "command not found". One line
-  # in the shell's startup file fixes that, added only when no line there
-  # mentions that folder yet. (Windows: Anthropic's installer sets the PATH.)
-  case "$(uname -s 2>/dev/null || true)" in
-    MINGW* | MSYS* | CYGWIN*) return 0 ;;
-  esac
+  # A new window does not look in ~/.local/bin, where Claude Code puts
+  # `claude`, so typing it there would say "command not found". One line in
+  # the shell's startup file fixes that, added only when no line there
+  # mentions that folder yet.
   local rc
-  case "$(basename "${SHELL:-}")" in
-    zsh) rc="$HOME/.zshrc" ;;
-    bash) if [ "$(uname -s)" = 'Darwin' ]; then rc="$HOME/.bash_profile"; else rc="$HOME/.bashrc"; fi ;;
-    *) return 0 ;;
+  case "$os" in
+    MINGW* | MSYS* | CYGWIN*) rc="$HOME/.bashrc" ;;
+    *)
+      case "$(basename "${SHELL:-}")" in
+        zsh) rc="$HOME/.zshrc" ;;
+        bash) if [ "$os" = 'Darwin' ]; then rc="$HOME/.bash_profile"; else rc="$HOME/.bashrc"; fi ;;
+        *) return 0 ;;
+      esac
+      ;;
   esac
   if ! grep -qs '\.local/bin' "$rc"; then
     printf '\n# Added by the Surge AI Employees installer, so the claude command is found.\nexport PATH="$HOME/.local/bin:$PATH"\n' >> "$rc" \

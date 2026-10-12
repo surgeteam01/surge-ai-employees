@@ -57,6 +57,36 @@ function Install-SurgeAiEmployees {
   function Say([string]$Text = '', [string]$Color = '') {
     if ($Color) { Write-Host $Text -ForegroundColor $Color } else { Write-Host $Text }
   }
+
+  # A box around plain lines, for the title and for what to do next. Written
+  # as character codes, like the tick above: this file reaches the founder as
+  # text, and only ASCII survives every way of fetching it.
+  $BoxWidth = 60
+  $Rule = [string][char]0x2500 * $BoxWidth
+  $Bar = [char]0x2502
+  function Box([string[]]$Lines) {
+    Write-Host ('  ' + [char]0x250C + $Rule + [char]0x2510) -ForegroundColor Cyan
+    foreach ($line in $Lines) {
+      Write-Host "  $Bar" -ForegroundColor Cyan -NoNewline
+      Write-Host ('  ' + $line.PadRight($BoxWidth - 2)) -NoNewline
+      Write-Host $Bar -ForegroundColor Cyan
+    }
+    Write-Host ('  ' + [char]0x2514 + $Rule + [char]0x2518) -ForegroundColor Cyan
+  }
+
+  # One step of the install: StepStart says what is happening, StepDone
+  # writes a tick over it.
+  function Clear-Line {
+    $width = 80
+    try { $width = [Console]::WindowWidth } catch { }
+    Write-Host ("`r" + (' ' * [Math]::Max(1, $width - 1)) + "`r") -NoNewline
+  }
+  function StepStart([string]$Text) { Write-Host "  $([char]0x00B7) $Text" -ForegroundColor DarkGray -NoNewline }
+  function StepDone([string]$Text) {
+    Clear-Line
+    Write-Host "  $Ok " -ForegroundColor Green -NoNewline
+    Write-Host $Text
+  }
   # A refusal this script words itself, as opposed to anything else that throws.
   function Fail([string]$Text) { throw [System.InvalidOperationException]::new("SURGE: $Text") }
 
@@ -148,22 +178,50 @@ function Install-SurgeAiEmployees {
   # Claude Code is where the AI Employees work, so a founder who does not have
   # it yet gets it here, from Anthropic's own installer, run in a PowerShell of
   # its own: that installer ends with `exit`, which here would close this
-  # window. Already installed: nothing is touched. Returns $true when it
-  # installed it.
-  function Install-ClaudeCode {
+  # window. Its words go to a log in $Work, shown only if it fails: they are
+  # written for developers ("not in your PATH", which this function then
+  # fixes), and the console shows their symbols as noise (a warning sign came out as
+  # three box-drawing letters on 12 Oct 2026), since it
+  # reads that installer's UTF-8 in the console's own code page. A spinner
+  # stands in for them. Already installed: nothing is touched. Returns $true
+  # when it installed it.
+  function Install-ClaudeCode([string]$Work) {
     if ($env:SURGE_INSTALL_CLAUDE_CODE -eq '0') { return $false }
     if (Find-Claude) {
-      Say "  $Ok Claude Code is already installed." Green
+      StepDone 'Claude Code is already installed.'
       return $false
     }
-    Say '  Installing Claude Code first, where your AI Employees work. This takes a minute or two...'
-    Say ''
-    $ErrorActionPreference = 'Continue'
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; irm $ClaudeCodePs1 | iex" | Out-Host
-    $code = $LASTEXITCODE
-    $ErrorActionPreference = 'Stop'
-    if ($code -ne 0) { Fail "Claude Code did not install. Install it from $ClaudeCodePage, then run this command again." }
-    if (-not (Find-Claude)) { Fail "Claude Code's installer finished, but there is no claude command. Install it from $ClaudeCodePage, then run this command again." }
+    $log = Join-Path $Work 'claude-code-install.log'
+    $command = "[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072; irm $ClaudeCodePs1 | iex"
+    $process = Start-Process -FilePath 'powershell.exe' -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"$command`"" `
+      -NoNewWindow -PassThru -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+    $null = $process.Handle  # without it, Windows PowerShell can lose the exit code
+    $frames = '|/-\'
+    $i = 0
+    while (-not $process.HasExited) {
+      Write-Host "`r  " -NoNewline
+      Write-Host $frames[$i % 4] -ForegroundColor Cyan -NoNewline
+      Write-Host ' Installing Claude Code first (a minute or two)...' -NoNewline
+      $i += 1
+      Start-Sleep -Milliseconds 200
+    }
+    $process.WaitForExit()
+    Clear-Line
+    if ($process.ExitCode -ne 0) {
+      Say "  What Claude Code's installer said:" DarkGray
+      foreach ($file in @($log, "$log.err")) {
+        if (Test-Path -LiteralPath $file) { Get-Content -LiteralPath $file -Tail 15 | ForEach-Object { Say "    $_" DarkGray } }
+      }
+      Fail "Claude Code did not install. Install it from $ClaudeCodePage, then run this command again."
+    }
+    $claude = Find-Claude
+    if (-not $claude) { Fail "Claude Code's installer finished, but there is no claude command. Install it from $ClaudeCodePage, then run this command again." }
+    $version = ''
+    try {
+      $ErrorActionPreference = 'Continue'
+      $version = ((& $claude --version 2>$null) | Select-Object -First 1) -replace '\s.*$', ''
+    } catch { } finally { $ErrorActionPreference = 'Stop' }
+    if ($version) { StepDone "Claude Code installed ($version)" } else { StepDone 'Claude Code installed' }
 
     # The claude command, in this window and in every new one. This window:
     # $env:Path, which `iex` lets this script change. New windows: the user's
@@ -206,9 +264,8 @@ function Install-SurgeAiEmployees {
     $record = Join-Path $surgeDir 'installed'
 
     Say ''
-    Say 'Surge AI Employees' White
+    Box @('Surge AI Employees', 'Your AI team is moving in.')
     Say ''
-    $claudeFresh = Install-ClaudeCode
 
     # What this installer put here before: the employees to keep current, and
     # the skill folders it may replace without a backup while they still match.
@@ -250,11 +307,15 @@ function Install-SurgeAiEmployees {
     $work = Join-Path $parent ('.surge-install.' + [IO.Path]::GetRandomFileName().Replace('.', ''))
     New-Item -ItemType Directory -Path $work | Out-Null
 
+    # After the names are checked, so a typo costs nothing; after the staging
+    # folder exists, which is where Claude Code's installer writes its log.
+    $claudeFresh = Install-ClaudeCode $work
+
     # The archive for this machine's whole team, in roster order.
     $setName = @(Split-Words $SurgeRoster | Where-Object { ($wanted -ccontains $_) -or ($have -ccontains $_) }) -join '_'
     $url = "$SurgePackUrl/$setName.tar.gz"
     $archive = Join-Path $work 'pack.tar.gz'
-    Say '  Downloading your AI Employees...'
+    StepStart 'Downloading your AI Employees...'
     try {
       Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $archive -TimeoutSec 120
     } catch {
@@ -265,7 +326,8 @@ function Install-SurgeAiEmployees {
       Fail 'Could not reach Surge to download your AI Employees. Check your connection and run the command again.'
     }
 
-    Say '  Downloaded. Unpacking and checking every file...'
+    StepDone 'Downloaded your AI Employees'
+    StepStart 'Unpacking and checking every file...'
     $pack = Join-Path $work 'pack'
     New-Item -ItemType Directory -Path $pack | Out-Null
     $ErrorActionPreference = 'Continue'
@@ -354,16 +416,20 @@ function Install-SurgeAiEmployees {
     # Left alone: a founder may still be using it, and it is theirs to remove.
     $retired = @($oldSkills | Where-Object { -not ($newSkills -ccontains $_) -and (Test-Path -LiteralPath (Join-Path $skillsDir $_)) })
 
+    StepDone "Moved them in: $($newSkills.Count) skills, every file checked"
+
     Say ''
+    Say '  Your team' White
     foreach ($employee in $employees) {
-      Write-Host "  $Ok " -ForegroundColor Green -NoNewline
+      Write-Host "    $Ok " -ForegroundColor Green -NoNewline
       Write-Host $employee[0] -ForegroundColor White -NoNewline
       Write-Host " $($employee[1])" -ForegroundColor DarkGray
     }
-    Say '    with The AI COO and the Business Brain, which come with every AI Employee.' DarkGray
+    Write-Host '    + ' -ForegroundColor Cyan -NoNewline
+    Write-Host 'The AI COO and the Business Brain, who come with every AI Employee' -ForegroundColor DarkGray
     Say ''
-    Say "  Skills:          $(Pretty $skillsDir)"
-    Say "  Training guides: $(Pretty $surgeDir)"
+    Say "  Skills:          $(Pretty $skillsDir)" DarkGray
+    Say "  Training guides: $(Pretty $surgeDir)" DarkGray
     if ($moved.Count -gt 0) {
       Say ''
       Say '  Moved aside first, because this installer did not put them there:'
@@ -389,17 +455,21 @@ function Install-SurgeAiEmployees {
       foreach ($dir in $retired) { Say "    $(Pretty (Join-Path $skillsDir $dir))  (delete it if you no longer use it)" }
     }
     Say ''
-    Say '  Next' White
+    Say '  What to do now' White
     if ($claudeFresh) {
-      Say '    1. In this window, type  claude  and press Enter.'
-      Say '       It opens your browser: sign in with your paid Claude account (Pro or higher).'
-      Say '       That starts a new Claude Code session, which loads the new skills.'
+      Box @(
+        '1. In this window, type  claude  and press Enter.',
+        '2. In the browser, sign in with your paid Claude account.',
+        '3. Ask:   Who do I have on my team?',
+        '4. Then:  Set up my business brain.'
+      )
     } else {
-      Say '    1. Start a new Claude Code session, so it loads the new skills:'
-      Say '       type  claude  and press Enter.'
+      Box @(
+        '1. Start a new Claude Code session: type  claude',
+        '2. Ask:   Who do I have on my team?',
+        '3. Then:  Set up my business brain.'
+      )
     }
-    Say '    2. Ask it:  Who do I have on my team?'
-    Say '    3. Then:    Set up my business brain.'
     Say ''
     if ($wanted.Count -gt 1) { Say '  Before you brief them, read their training guides:' } else { Say '  Before you brief them, read the training guide:' }
     foreach ($key in $wanted) {
