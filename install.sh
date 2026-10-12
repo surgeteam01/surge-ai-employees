@@ -54,6 +54,10 @@ SURGE_EMPLOYEES='business-strategist content-marketer growth-and-sales brand-and
 # Every AI Employee there is, in hiring order (public only): what a name after
 # `bash -s --` is checked against, and the order an archive's name follows.
 SURGE_ROSTER='business-strategist content-marketer growth-and-sales brand-and-product'
+# This person's own Surge server (api only, and only when it would serve their
+# Business Brain): a URL, never a command. 'What to do now' prints the line that
+# connects Claude Code to it, and never runs it. Empty, it is the same for everybody.
+SURGE_MCP_URL=''
 
 if [ -t 1 ]; then
   BOLD=$'\033[1m'; DIM=$'\033[2m'; GREEN=$'\033[32m'; RED=$'\033[31m'; CYAN=$'\033[36m'; RESET=$'\033[0m'
@@ -533,16 +537,27 @@ main() {
   fi
   say ""
   say "  ${BOLD}What to do now${RESET}"
+  if [ -n "$SURGE_MCP_URL" ]; then
+    # Before the new session, which is when Claude Code loads its servers. The
+    # argv is fixed here and the URL was checked to hold nothing a shell acts
+    # on; it is printed for the founder to run, never run from here.
+    local connect=(claude mcp add --transport http --scope user surgify-ops "$SURGE_MCP_URL")
+    say "    Connect your Surge server, if you have not:"
+    say "      ${connect[*]}"
+    say "      ${DIM}When Claude Code first uses it, your browser opens to approve it. If not, type /mcp.${RESET}"
+  fi
+  local brain="Set up my business brain."
+  if [ -n "$SURGE_MCP_URL" ]; then brain="Read my business brain."; fi
   if [ -n "$CLAUDE_FRESH" ]; then
     box "1. Close this window and open a new one." \
       "2. Type  claude  and press Enter." \
       "3. In the browser, sign in with your paid Claude account." \
       "4. Ask:   Who do I have on my team?" \
-      "5. Then:  Set up my business brain."
+      "5. Then:  $brain"
   else
     box "1. Start a new Claude Code session: type  claude" \
       "2. Ask:   Who do I have on my team?" \
-      "3. Then:  Set up my business brain."
+      "3. Then:  $brain"
   fi
   say ""
   local guides=0
