@@ -60,6 +60,24 @@ SURGE_ROSTER='business-strategist content-marketer growth-and-sales brand-and-pr
 # Business Brain): a URL, never a command. 'What to do now' prints the line that
 # connects Claude Code to it, and never runs it. Empty, it is the same for everybody.
 SURGE_MCP_URL=''
+# What the install says to the founder: the title box and the "What to do now"
+# steps, for the Claude app (Mac, Windows) and for the terminal (Linux).
+# Marketing edits them at /agents/copy/installer/public; each is printable ASCII
+# without quotes, backslashes, backticks or $, held to that before it is
+# written here (installerCopyProblems), so it cannot leave its quotes.
+SURGE_COPY_TITLE='Surge AI Employees'
+SURGE_COPY_TAGLINE='Your AI team is moving in.'
+SURGE_COPY_STEPS_APP='1. Open the Claude app on your computer.
+   No app yet? Get it at claude.com/download
+2. Switch from Chat to Code, and start a new session.
+3. Sign in with your paid Claude account, if it asks.
+4. Ask:   Who do I have on my team?
+5. Then:  {brain}
+
+Prefer the terminal? Open a new window, type  claude'
+SURGE_COPY_STEPS_TERMINAL='1. Start a new Claude Code session: type  claude
+2. Ask:   Who do I have on my team?
+3. Then:  {brain}'
 
 if [ -t 1 ]; then
   BOLD=$'\033[1m'; DIM=$'\033[2m'; GREEN=$'\033[32m'; RED=$'\033[31m'; CYAN=$'\033[36m'; RESET=$'\033[0m'
@@ -269,7 +287,7 @@ main() {
   record="$surge_dir/installed"
 
   say ""
-  box "Surge AI Employees" "Your AI team is moving in."
+  box "$SURGE_COPY_TITLE" "$SURGE_COPY_TAGLINE"
   say ""
 
   # What this installer put here before: the employees to keep current, and
@@ -553,31 +571,18 @@ main() {
   if [ -n "$SURGE_MCP_URL" ]; then brain="Read my business brain."; fi
   # On a Mac or Windows a founder works in the Claude app, which runs Claude
   # Code under its Code tab and reads the same skills folder, so that is where
-  # step 1 sends them. Linux has no Claude app, so there it is the terminal.
-  local desktop=''
+  # the steps send them. Linux has no Claude app, so there it is the terminal.
+  # The words are marketing's (SURGE_COPY_*), one line per line of the box,
+  # with {brain} standing for the business-brain prompt.
+  local steps="$SURGE_COPY_STEPS_TERMINAL" line
+  local -a lines=()
   case "$(uname -s 2>/dev/null || true)" in
-    Darwin | MINGW* | MSYS* | CYGWIN*) desktop='yes' ;;
+    Darwin | MINGW* | MSYS* | CYGWIN*) steps="$SURGE_COPY_STEPS_APP" ;;
   esac
-  if [ -n "$desktop" ]; then
-    box "1. Open the Claude app on your computer." \
-      "   No app yet? Get it at claude.com/download" \
-      "2. Switch from Chat to Code, and start a new session." \
-      "3. Sign in with your paid Claude account, if it asks." \
-      "4. Ask:   Who do I have on my team?" \
-      "5. Then:  $brain" \
-      "" \
-      "Prefer the terminal? Open a new window, type  claude"
-  elif [ -n "$CLAUDE_FRESH" ]; then
-    box "1. Close this window and open a new one." \
-      "2. Type  claude  and press Enter." \
-      "3. In the browser, sign in with your paid Claude account." \
-      "4. Ask:   Who do I have on my team?" \
-      "5. Then:  $brain"
-  else
-    box "1. Start a new Claude Code session: type  claude" \
-      "2. Ask:   Who do I have on my team?" \
-      "3. Then:  $brain"
-  fi
+  while IFS= read -r line || [ -n "$line" ]; do
+    lines+=("${line//\{brain\}/$brain}")
+  done <<< "$steps"
+  box "${lines[@]}"
   say ""
   local guides=0
   for key in $SURGE_EMPLOYEES; do guides=$((guides + 1)); done
@@ -603,11 +608,9 @@ main() {
 # Claude Code is where the AI Employees work, so a founder who does not have
 # it yet gets it here, from Anthropic's own installer, instead of as a step of
 # its own in the guide (P32/I55). Where it is already installed nothing is
-# touched. SURGE_INSTALL_CLAUDE_CODE=0 skips this. Sets CLAUDE_FRESH to `yes`
-# when it installed it, so the last words can say how to open it the first time.
+# touched. SURGE_INSTALL_CLAUDE_CODE=0 skips this.
 # Defined after main(), not before it: it downloads, and a test holds
 # everything above main() to touching neither the disk nor the network.
-CLAUDE_FRESH=''
 CLAUDE_CODE_SH='https://claude.ai/install.sh'
 CLAUDE_CODE_PS1='https://claude.ai/install.ps1'
 ensure_claude_code() {
@@ -658,7 +661,6 @@ ensure_claude_code() {
   fi
   version="$("$claude_bin" --version 2>/dev/null | awk '{ print $1; exit }' || true)"
   step_done "Claude Code installed${version:+ ($version)}"
-  CLAUDE_FRESH='yes'
 
   # A new window does not look in ~/.local/bin, where Claude Code puts
   # `claude`, so typing it there would say "command not found". One line in

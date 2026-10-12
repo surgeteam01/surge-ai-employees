@@ -45,6 +45,20 @@
 function Install-SurgeAiEmployees {
   $SurgePackUrl = 'https://raw.githubusercontent.com/surgeteam01/surge-ai-employees/main/packs'
   $SurgeHireUrl = 'https://github.com/surgeteam01/surge-ai-employees'
+  # What the install says to the founder: the title box and the "What to do
+  # now" steps. Marketing edits them at /agents/copy/installer/public; each is
+  # printable ASCII without quotes, backslashes, backticks or $, held to that
+  # before it is written here, so it cannot leave its quotes.
+  $SurgeCopyTitle = 'Surge AI Employees'
+  $SurgeCopyTagline = 'Your AI team is moving in.'
+  $SurgeCopyStepsApp = '1. Open the Claude app on your computer.
+   No app yet? Get it at claude.com/download
+2. Switch from Chat to Code, and start a new session.
+3. Sign in with your paid Claude account, if it asks.
+4. Ask:   Who do I have on my team?
+5. Then:  {brain}
+
+Prefer the terminal? Open a new window, type  claude'
   $SurgeEmployees = 'business-strategist content-marketer growth-and-sales brand-and-product'
   $SurgeRoster = 'business-strategist content-marketer growth-and-sales brand-and-product'
   $ClaudeCodePs1 = 'https://claude.ai/install.ps1'
@@ -302,7 +316,7 @@ function Install-SurgeAiEmployees {
     $record = Join-Path $surgeDir 'installed'
 
     Say ''
-    Box @('Surge AI Employees', 'Your AI team is moving in.')
+    Box @($SurgeCopyTitle, $SurgeCopyTagline)
     Say ''
 
     # What this installer put here before: the employees to keep current, and
@@ -347,7 +361,7 @@ function Install-SurgeAiEmployees {
 
     # After the names are checked, so a typo costs nothing; after the staging
     # folder exists, which is where Claude Code's installer writes its log.
-    $claudeFresh = Install-ClaudeCode $work
+    $null = Install-ClaudeCode $work
     Install-ClaudeApp $work
 
     # The archive for this machine's whole team, in roster order.
@@ -496,19 +510,10 @@ function Install-SurgeAiEmployees {
     Say ''
     Say '  What to do now' White
     # A founder on Windows works in the Claude app, which runs Claude Code
-    # under its Code tab and reads the same skills folder; the terminal is
-    # the fallback. $claudeFresh only decides whether this window knows claude.
-    $terminal = if ($claudeFresh) { 'Prefer the terminal? Type  claude  in this window.' } else { 'Prefer the terminal? Open a new window, type  claude' }
-    Box @(
-      '1. Open the Claude app on your computer.',
-      '   No app yet? Get it at claude.com/download',
-      '2. Switch from Chat to Code, and start a new session.',
-      '3. Sign in with your paid Claude account, if it asks.',
-      '4. Ask:   Who do I have on my team?',
-      '5. Then:  Set up my business brain.',
-      '',
-      $terminal
-    )
+    # under its Code tab and reads the same skills folder. The words are
+    # marketing's, one line per line of the box, {brain} standing for the
+    # business-brain prompt.
+    Box @($SurgeCopyStepsApp -split "`n" | ForEach-Object { $_.Replace('{brain}', 'Set up my business brain.') })
     Say ''
     if ($wanted.Count -gt 1) { Say '  Before you brief them, read their training guides:' } else { Say '  Before you brief them, read the training guide:' }
     foreach ($key in $wanted) {
