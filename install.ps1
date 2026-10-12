@@ -456,20 +456,20 @@ function Install-SurgeAiEmployees {
     }
     Say ''
     Say '  What to do now' White
-    if ($claudeFresh) {
-      Box @(
-        '1. In this window, type  claude  and press Enter.',
-        '2. In the browser, sign in with your paid Claude account.',
-        '3. Ask:   Who do I have on my team?',
-        '4. Then:  Set up my business brain.'
-      )
-    } else {
-      Box @(
-        '1. Start a new Claude Code session: type  claude',
-        '2. Ask:   Who do I have on my team?',
-        '3. Then:  Set up my business brain.'
-      )
-    }
+    # A founder on Windows works in the Claude app, which runs Claude Code
+    # under its Code tab and reads the same skills folder; the terminal is
+    # the fallback. $claudeFresh only decides whether this window knows claude.
+    $terminal = if ($claudeFresh) { 'Prefer the terminal? Type  claude  in this window.' } else { 'Prefer the terminal? Open a new window, type  claude' }
+    Box @(
+      '1. Open the Claude app on your computer.',
+      '   No app yet? Get it at claude.com/download',
+      '2. Switch from Chat to Code, and start a new session.',
+      '3. Sign in with your paid Claude account, if it asks.',
+      '4. Ask:   Who do I have on my team?',
+      '5. Then:  Set up my business brain.',
+      '',
+      $terminal
+    )
     Say ''
     if ($wanted.Count -gt 1) { Say '  Before you brief them, read their training guides:' } else { Say '  Before you brief them, read the training guide:' }
     foreach ($key in $wanted) {
@@ -478,7 +478,7 @@ function Install-SurgeAiEmployees {
     }
     Say ''
     Say '  To update later, run the same command again. It keeps what you changed.' DarkGray
-    Say "  This installs for Claude Code. On the Claude website or desktop app, upload the zips from $SurgeHireUrl instead." DarkGray
+    Say "  This installs for Claude Code. For Chat on the Claude website or app, upload the zips from $SurgeHireUrl instead." DarkGray
     Say ''
   } catch {
     $message = $_.Exception.Message

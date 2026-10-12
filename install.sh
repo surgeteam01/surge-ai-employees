@@ -548,7 +548,23 @@ main() {
   fi
   local brain="Set up my business brain."
   if [ -n "$SURGE_MCP_URL" ]; then brain="Read my business brain."; fi
-  if [ -n "$CLAUDE_FRESH" ]; then
+  # On a Mac or Windows a founder works in the Claude app, which runs Claude
+  # Code under its Code tab and reads the same skills folder, so that is where
+  # step 1 sends them. Linux has no Claude app, so there it is the terminal.
+  local desktop=''
+  case "$(uname -s 2>/dev/null || true)" in
+    Darwin | MINGW* | MSYS* | CYGWIN*) desktop='yes' ;;
+  esac
+  if [ -n "$desktop" ]; then
+    box "1. Open the Claude app on your computer." \
+      "   No app yet? Get it at claude.com/download" \
+      "2. Switch from Chat to Code, and start a new session." \
+      "3. Sign in with your paid Claude account, if it asks." \
+      "4. Ask:   Who do I have on my team?" \
+      "5. Then:  $brain" \
+      "" \
+      "Prefer the terminal? Open a new window, type  claude"
+  elif [ -n "$CLAUDE_FRESH" ]; then
     box "1. Close this window and open a new one." \
       "2. Type  claude  and press Enter." \
       "3. In the browser, sign in with your paid Claude account." \
@@ -573,10 +589,10 @@ main() {
   say ""
   if [ "$SURGE_PACK_MODE" = 'public' ]; then
     say "  ${DIM}To update later, run the same command again. It keeps what you changed."
-    say "  This installs for Claude Code. On the Claude website or desktop app, upload the zips from $SURGE_HIRE_URL instead.${RESET}"
+    say "  This installs for Claude Code. For Chat on the Claude website or app, upload the zips from $SURGE_HIRE_URL instead.${RESET}"
   else
     say "  ${DIM}To update later, copy a fresh command from $SURGE_HIRE_URL"
-    say "  This installs for Claude Code. On the Claude website or desktop app, download the zip from that page instead.${RESET}"
+    say "  This installs for Claude Code. For Chat on the Claude website or app, download the zip from that page instead.${RESET}"
   fi
   say ""
 }
