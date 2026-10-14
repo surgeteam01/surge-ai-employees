@@ -278,13 +278,20 @@ Prefer the terminal? Open a new window, type  claude'
   # tab is Claude Code, reading the same skills folder. Installed when it is
   # not there yet, from Anthropic's per-user package, which needs no
   # administrator (their full installer asks for one, for Cowork), and never
-  # updated here (it updates itself). A failure is said and the install goes
+  # updated here (it updates itself). When the package will not go on (a
+  # policy that blocks packages, an elevated window under another account),
+  # winget is the second try: Anthropic.Claude is the full installer, which
+  # may ask for an administrator. A failure says why and the install goes
   # on, because the terminal works without the app.
-  function Install-ClaudeApp([string]$Work) {
-    if ($env:SURGE_INSTALL_CLAUDE_APP -eq '0') { return }
+  function Test-ClaudeApp {
     $installed = $null
     try { $installed = Get-AppxPackage -Name 'Claude' -ErrorAction SilentlyContinue } catch { }
-    if ($installed -or (Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'AnthropicClaude'))) {
+    return [bool]($installed -or (Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'AnthropicClaude')))
+  }
+
+  function Install-ClaudeApp([string]$Work) {
+    if ($env:SURGE_INSTALL_CLAUDE_APP -eq '0') { return }
+    if (Test-ClaudeApp) {
       StepDone 'The Claude app is already installed.'
       return
     }
@@ -293,11 +300,34 @@ Prefer the terminal? Open a new window, type  claude'
     # home folder like C:\Users\O'Brien.
     $package = (Join-Path $Work 'Claude.msix').Replace("'", "''")
     $command = "`$ErrorActionPreference = 'Stop'; Invoke-WebRequest -UseBasicParsing -Uri '$url' -OutFile '$package'; Add-AppxPackage -Path '$package'"
-    $code = Invoke-WithSpinner 'Installing the Claude app (a minute or two)...' $command (Join-Path $Work 'claude-app-install.log')
-    if ($code -eq 0) {
+    $msixLog = Join-Path $Work 'claude-app-install.log'
+    $code = Invoke-WithSpinner 'Installing the Claude app (a minute or two)...' $command $msixLog
+    if ($code -eq 0 -and (Test-ClaudeApp)) {
       StepDone 'Claude app installed'
-    } else {
-      Say '  Could not install the Claude app. Get it at claude.com/download' DarkGray
+      return
+    }
+    $logs = @($msixLog, "$msixLog.err")
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+      # Exit codes are not trusted on their own: winget answers "already
+      # installed" and "no newer version" with failures, so the app is looked
+      # for afterwards instead.
+      $wingetLog = Join-Path $Work 'claude-app-winget.log'
+      $winget = 'winget install --id Anthropic.Claude --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity; exit $LASTEXITCODE'
+      $null = Invoke-WithSpinner 'Trying again with winget (a minute or two)...' $winget $wingetLog
+      if (Test-ClaudeApp) {
+        StepDone 'Claude app installed (with winget)'
+        return
+      }
+      $logs += @($wingetLog, "$wingetLog.err")
+    }
+    Say '  Could not install the Claude app. Get it at claude.com/download' DarkGray
+    Say '  What the installer said:' DarkGray
+    # An error's first lines say what went wrong; winget's last lines do.
+    foreach ($file in $logs) {
+      if (-not (Test-Path -LiteralPath $file)) { continue }
+      $lines = @(Get-Content -LiteralPath $file | Where-Object { $_.Trim() -ne '' })
+      $shown = if ($file -like '*.err') { $lines | Select-Object -First 2 } else { $lines | Select-Object -Last 3 }
+      $shown | ForEach-Object { Say "    $_" DarkGray }
     }
   }
 
