@@ -276,13 +276,14 @@ Prefer the terminal? Open a new window, type  claude'
 
   # The Claude app, which is where "What to do now" sends a founder: its Code
   # tab is Claude Code, reading the same skills folder. Installed when it is
-  # not there yet, from Anthropic's per-user package, which needs no
-  # administrator (their full installer asks for one, for Cowork), and never
-  # updated here (it updates itself). When the package will not go on (a
-  # policy that blocks packages, an elevated window under another account),
-  # winget is the second try: Anthropic.Claude is the full installer, which
-  # may ask for an administrator. A failure says why and the install goes
-  # on, because the terminal works without the app.
+  # not there yet, and never updated here (it updates itself). winget goes
+  # first: Anthropic.Claude is the full installer, fetched from
+  # downloads.claude.ai, and it may ask for an administrator. The per-user
+  # package from claude.ai is the fallback, for a machine with no winget or
+  # where winget failed: it needs no administrator, but claude.ai can answer
+  # a script with a Cloudflare check, which is why it is not first. A
+  # failure says why and the install goes on, because the terminal works
+  # without the app.
   function Test-ClaudeApp {
     $installed = $null
     try { $installed = Get-AppxPackage -Name 'Claude' -ErrorAction SilentlyContinue } catch { }
@@ -295,31 +296,33 @@ Prefer the terminal? Open a new window, type  claude'
       StepDone 'The Claude app is already installed.'
       return
     }
-    $url = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { $ClaudeAppMsixArm64 } else { $ClaudeAppMsixX64 }
-    # Doubled quotes: how a single-quoted PowerShell string holds one, for a
-    # home folder like C:\Users\O'Brien.
-    $package = (Join-Path $Work 'Claude.msix').Replace("'", "''")
-    $command = "`$ErrorActionPreference = 'Stop'; Invoke-WebRequest -UseBasicParsing -Uri '$url' -OutFile '$package'; Add-AppxPackage -Path '$package'"
-    $msixLog = Join-Path $Work 'claude-app-install.log'
-    $code = Invoke-WithSpinner 'Installing the Claude app (a minute or two)...' $command $msixLog
-    if ($code -eq 0 -and (Test-ClaudeApp)) {
-      StepDone 'Claude app installed'
-      return
-    }
-    $logs = @($msixLog, "$msixLog.err")
+    $logs = @()
     if (Get-Command winget -ErrorAction SilentlyContinue) {
       # Exit codes are not trusted on their own: winget answers "already
       # installed" and "no newer version" with failures, so the app is looked
       # for afterwards instead.
       $wingetLog = Join-Path $Work 'claude-app-winget.log'
       $winget = 'winget install --id Anthropic.Claude --exact --silent --accept-package-agreements --accept-source-agreements --disable-interactivity; exit $LASTEXITCODE'
-      $null = Invoke-WithSpinner 'Trying again with winget (a minute or two)...' $winget $wingetLog
+      $null = Invoke-WithSpinner 'Installing the Claude app (a minute or two)...' $winget $wingetLog
       if (Test-ClaudeApp) {
-        StepDone 'Claude app installed (with winget)'
+        StepDone 'Claude app installed'
         return
       }
       $logs += @($wingetLog, "$wingetLog.err")
     }
+    $url = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { $ClaudeAppMsixArm64 } else { $ClaudeAppMsixX64 }
+    # Doubled quotes: how a single-quoted PowerShell string holds one, for a
+    # home folder like C:\Users\O'Brien.
+    $package = (Join-Path $Work 'Claude.msix').Replace("'", "''")
+    $command = "`$ErrorActionPreference = 'Stop'; Invoke-WebRequest -UseBasicParsing -Uri '$url' -OutFile '$package'; Add-AppxPackage -Path '$package'"
+    $msixLog = Join-Path $Work 'claude-app-install.log'
+    $words = if ($logs.Count -gt 0) { 'Trying another way (a minute or two)...' } else { 'Installing the Claude app (a minute or two)...' }
+    $code = Invoke-WithSpinner $words $command $msixLog
+    if ($code -eq 0 -and (Test-ClaudeApp)) {
+      StepDone 'Claude app installed'
+      return
+    }
+    $logs += @($msixLog, "$msixLog.err")
     Say '  Could not install the Claude app. Get it at claude.com/download' DarkGray
     Say '  What the installer said:' DarkGray
     # An error's first lines say what went wrong; winget's last lines do.
