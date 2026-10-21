@@ -59,6 +59,9 @@ function Install-SurgeAiEmployees {
 5. Then:  {brain}
 
 Prefer the terminal? Open a new window, type  claude'
+  # The closing note under the box: {zips} stands for the page the zips are on.
+  $SurgeCopyClosing = 'They work wherever Claude Code runs, with no zips needed.
+For Chat on claude.ai or the Chat tab, upload the zips from {zips} instead.'
   $SurgeEmployees = 'business-strategist content-marketer growth-and-sales brand-and-product'
   $SurgeRoster = 'business-strategist content-marketer growth-and-sales brand-and-product'
   $ClaudeCodePs1 = 'https://claude.ai/install.ps1'
@@ -284,10 +287,23 @@ Prefer the terminal? Open a new window, type  claude'
   # a script with a Cloudflare check, which is why it is not first. A
   # failure says why and the install goes on, because the terminal works
   # without the app.
+  # Installed means registered: the app package for this user, or an entry
+  # named exactly Claude in Add or remove programs (not "Claude Code"). Both
+  # go when the app is removed there. A folder does not count: uninstalling
+  # leaves %LOCALAPPDATA%\AnthropicClaude behind, and checking for it once
+  # told a person who had just removed the app that it was still installed.
   function Test-ClaudeApp {
     $installed = $null
     try { $installed = Get-AppxPackage -Name 'Claude' -ErrorAction SilentlyContinue } catch { }
-    return [bool]($installed -or (Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'AnthropicClaude')))
+    if ($installed) { return $true }
+    $keys = @(
+      'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+      'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+      'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    $entries = @()
+    try { $entries = @(Get-ItemProperty -Path $keys -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -eq 'Claude' }) } catch { }
+    return $entries.Count -gt 0
   }
 
   function Install-ClaudeApp([string]$Work) {
@@ -555,7 +571,7 @@ Prefer the terminal? Open a new window, type  claude'
     }
     Say ''
     Say '  To update later, run the same command again. It keeps what you changed.' DarkGray
-    Say "  This installs for Claude Code. For Chat on the Claude website or app, upload the zips from $SurgeHireUrl instead." DarkGray
+    foreach ($note in ($SurgeCopyClosing -split "`n")) { Say "  $($note.Replace('{zips}', $SurgeHireUrl))" DarkGray }
     Say ''
   } catch {
     $message = $_.Exception.Message

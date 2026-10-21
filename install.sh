@@ -78,6 +78,10 @@ Prefer the terminal? Open a new window, type  claude'
 SURGE_COPY_STEPS_TERMINAL='1. Start a new Claude Code session: type  claude
 2. Ask:   Who do I have on my team?
 3. Then:  {brain}'
+# The closing note under the box, also marketing's: {zips} stands for the page
+# the zips are on.
+SURGE_COPY_CLOSING='They work wherever Claude Code runs, with no zips needed.
+For Chat on claude.ai or the Chat tab, upload the zips from {zips} instead.'
 
 if [ -t 1 ]; then
   BOLD=$'\033[1m'; DIM=$'\033[2m'; GREEN=$'\033[32m'; RED=$'\033[31m'; CYAN=$'\033[36m'; RESET=$'\033[0m'
@@ -596,12 +600,14 @@ main() {
   done
   say ""
   if [ "$SURGE_PACK_MODE" = 'public' ]; then
-    say "  ${DIM}To update later, run the same command again. It keeps what you changed."
-    say "  This installs for Claude Code. For Chat on the Claude website or app, upload the zips from $SURGE_HIRE_URL instead.${RESET}"
+    say "  ${DIM}To update later, run the same command again. It keeps what you changed.${RESET}"
   else
-    say "  ${DIM}To update later, copy a fresh command from $SURGE_HIRE_URL"
-    say "  This installs for Claude Code. For Chat on the Claude website or app, download the zip from that page instead.${RESET}"
+    say "  ${DIM}To update later, copy a fresh command from $SURGE_HIRE_URL${RESET}"
   fi
+  local note
+  while IFS= read -r note || [ -n "$note" ]; do
+    say "  ${DIM}${note//\{zips\}/$SURGE_HIRE_URL}${RESET}"
+  done <<< "$SURGE_COPY_CLOSING"
   say ""
 }
 

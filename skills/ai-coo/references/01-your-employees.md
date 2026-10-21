@@ -118,6 +118,7 @@ generated from the packs themselves.
 - `ai-coo` -- installed here
 - `business-brain` -- installed here
 - `design-your-ai-employee` -- installed here
+- `skill-creator` -- installed here
 <!-- surge:installed-catalogue:end -->
 
 ## Foundational skills — run first when they are missing

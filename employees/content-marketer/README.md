@@ -51,6 +51,7 @@ Pick one channel. The Content Marketer can run all six and you cannot.
 | **The AI COO** | Route a request to the right AI Employee, and say plainly when it lives in one you have not hired. |
 | **Business Brain** | Interview the business once and keep what it said, so no skill asks twice. |
 | **Design your AI Employee** | Interview, read what you have, find what you could have, and design the employee nobody on your roster is yet. |
+| **Skill Creator** | Turn work you want done the same way every time into a skill, for the employee that does it, and offer it to the team. |
 
 ---
 
@@ -76,5 +77,5 @@ other skill reads first, so nobody explains their business twice. Start there.
 *Part of AI Employees for Founders by Surge Systems.*
 *These skills are yours to use. Please do not redistribute them.*
 
-Pack version `7cb7fda1b003` — see `VERSION` for the capability
+Pack version `61a98de78025` — see `VERSION` for the capability
 digests. If we improve one of these, the update names the capability that moved.

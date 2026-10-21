@@ -21,43 +21,43 @@ The core facts an agent should never have to ask twice.
 
 What is the business called, and who runs it?
 
-_text · **required**. Example: undefined_
+_text · **required**. Example: Bright Path Coaching, run by Sam Naidoo_
 
 ### Industry / niche `industry_niche`
 
 What industry or niche are you in? The more specific the better.
 
-_text · **required**. Example: undefined_
+_text · **required**. Example: Leadership coaching for first-time managers_
 
 ### Target audience `target_audience`
 
 Who do you serve? Describe them — roles, size, what they struggle with.
 
-_text · **required**. Example: undefined_
+_text · **required**. Example: New team leads at 20–200 person companies, promoted for their skill, not their leadership_
 
 ### Website `website`
 
 Where can we read about the business online?
 
-_text · optional. Example: undefined_
+_text · optional. Example: https://brightpathcoaching.example_
 
 ### Business stage `business_stage`
 
 Where is the business right now?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Two years in, fully booked, ready to add a group programme_
 
 ### Core mission `core_mission`
 
 Why does the business exist? What transformation do you provide?
 
-_text · **required**. Example: undefined_
+_text · **required**. Example: We help new managers lead with confidence in their first year_
 
 ### Unique value proposition `unique_value_proposition`
 
 What makes your approach different from competitors?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Coaching between real meetings, not a one-off workshop_
 
 ## Brand voice and style
 
@@ -67,43 +67,43 @@ How the business sounds, so drafts come back sounding like it and not like a tem
 
 How would you describe the way you talk to a client?
 
-_text · **required**. Example: undefined_
+_text · **required**. Example: Direct and plain-spoken, warm but not chatty_
 
 ### Personality traits `personality_traits`
 
 If the brand were a person, what would they be like?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Practical, candid, unhurried_
 
 ### Phrases you use `phrases_to_use`
 
 What words or phrases do you use often — your signature language?
 
-_list · optional. Example: undefined_
+_list · optional. Example: "Let's make this simple"_
 
 ### Phrases to avoid `phrases_to_avoid`
 
 What language makes you cringe? What should never appear?
 
-_list · optional. Example: undefined_
+_list · optional. Example: "Synergy", "guru", exclamation marks_
 
 ### Preferred length `content_length`
 
 Do you prefer short and scannable, or detailed and thorough?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Concise and scannable, with concrete examples_
 
 ### Emoji use `emoji_use`
 
 How do you feel about emojis?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Sparingly, or never_
 
 ### Formatting style `formatting_style`
 
 How should things be laid out?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Short paragraphs and bullets; headings on anything long_
 
 ## Brand assets and templates
 
@@ -113,55 +113,55 @@ What the business looks like, and the Canva brand template a design agent should
 
 What are your brand colours? Hex codes if you have them, otherwise describe them.
 
-_list · optional. Example: undefined_
+_list · optional. Example: #0B3B5A navy, #F4A300 amber, white_
 
 ### Typefaces `brand_fonts`
 
 What typefaces do you use — one for headings, one for body text?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Headings: Poppins SemiBold. Body: Inter Regular_
 
 ### Logo rules `brand_logo_rules`
 
 How should the logo be used? Which version goes on light and dark, and what should never be done to it?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Full colour on light, white on navy; never stretch or recolour_
 
 ### Imagery style `brand_imagery_style`
 
 What do your images look like? Photography, illustration, icons — and what feel?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Real photos of the team on site; no stock handshakes_
 
 ### Design don'ts `brand_design_donts`
 
 What must never appear in a design for you?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Drop shadows, clip art, colours outside the palette_
 
 ### Where the brand assets live `brand_asset_location`
 
 Where do the logo files and brand kit live?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Google Drive → Brand → Logos (link in the shared folder)_
 
 ### Canva brand template ID `canva_brand_template_id`
 
 Do you have a Canva brand template for this business? Paste its ID or the Canva link.
 
-_text · optional. Example: undefined_
+_text · optional. Example: DAFxxxxxxxx — or https://www.canva.com/design/DAFxxxxxxxx/edit_
 
 ### Canva brand template name `canva_brand_template_name`
 
 What is that template called in Canva?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Bright Path — Social Post (Square)_
 
 ### What the template is for `brand_template_use_cases`
 
 What is that template used for?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Instagram and LinkedIn single-image posts_
 
 ## Offers and expertise
 
@@ -171,25 +171,25 @@ What you actually sell, what you are known for, and what you do not touch.
 
 What are your main offers? Include the price and ideal client where it helps.
 
-_list · **required**. Example: undefined_
+_list · **required**. Example: Six-week manager coaching programme — from R12,000 per person_
 
 ### Areas of expertise `areas_of_expertise`
 
 What are you known for, or want to be known for?
 
-_list · **required**. Example: undefined_
+_list · **required**. Example: Difficult conversations, delegation, running one-to-ones_
 
 ### Topics you do not cover `topics_not_covered`
 
 What is outside your scope? What should an agent decline rather than attempt?
 
-_list · **required**. Example: undefined_
+_list · **required**. Example: Paid advertising, website design, financial planning_
 
 ### Credentials and proof `credentials_proof`
 
 What proof do you have — results, notable clients, certifications?
 
-_list · optional. Example: undefined_
+_list · optional. Example: ICF-accredited coach; 150+ managers coached_
 
 ## How you want to be helped
 
@@ -199,61 +199,67 @@ The work you actually want done, and the rules that apply to it.
 
 What kinds of content do you need help with?
 
-_list · optional. Example: undefined_
+_list · optional. Example: LinkedIn posts, newsletters, proposals_
 
 ### Platforms `content_platforms`
 
 Which platforms do you focus on?
 
-_list · optional. Example: undefined_
+_list · optional. Example: LinkedIn (primary), email newsletter_
 
 ### Content rules `content_rules`
 
 What rules should every piece of content follow?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Open with the reader's problem, never the company name_
 
 ### Client comms to draft `client_comms_drafts`
 
 What client communications do you want drafted?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Proposals, follow-ups, scope-boundary emails_
 
 ### Client comms tone `client_comms_tone`
 
 How should client communication come across?
 
-_text · optional. Example: undefined_
+_text · optional. Example: Consultative and confident; clear about price_
 
 ### Client comms principles `client_comms_principles`
 
 What are your non-negotiables in client communication?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Always state price plainly; always give a next step_
 
 ### Strategic topics `strategic_topics`
 
 What decisions do you want thinking partnership on?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Pricing, new offers, which clients to take_
 
 ### Challenge me on `challenge_me_on`
 
 What patterns should an agent push back on?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Underpricing, scope creep, saying yes to everything_
 
 ### Decision framework `decision_framework`
 
 How should an opportunity be evaluated?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Does it fit the mission? Can we deliver it excellently?_
 
 ### Admin support `admin_support`
 
 What administrative help is useful?
 
-_list · optional. Example: undefined_
+_list · optional. Example: SOPs, intake forms, project plan outlines_
+
+### Tools you use `tools_we_use`
+
+Which tools does the business run on day to day?
+
+_list · optional. Example: Google Workspace, Xero, Canva, WhatsApp Business_
 
 ## Current context and boundaries
 
@@ -263,49 +269,49 @@ Where the business is right now. This is the part that goes stale — it is mean
 
 What are you working toward over the next three to six months?
 
-_list · **required**. Example: undefined_
+_list · **required**. Example: Three retainer clients; two paid workshops_
 
 ### Current challenges `current_challenges`
 
 What are you genuinely struggling with right now?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Delivery capacity; inconsistent pipeline_
 
 ### Core values `core_values`
 
 What matters most in how you run the business?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Sustainable pace over hustle; say the hard thing early_
 
 ### Deal-breakers `deal_breakers`
 
 What will you not do, whatever the money?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Free work for exposure; 24/7 availability_
 
 ### Green lights `green_lights`
 
 What do you want more of? What should be said yes to quickly?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Recurring revenue; clients who act on advice_
 
 ### Keep me on track with `keep_me_on_track_with`
 
 What should an agent keep you honest about?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Checking work against current goals before committing_
 
 ### Don't let me `dont_let_me`
 
 What should an agent stop you doing?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Overcommit to free work; overcomplicate a simple offer_
 
 ### Always remind me to `always_remind_me_to`
 
 What do you consistently forget?
 
-_list · optional. Example: undefined_
+_list · optional. Example: Follow up warm leads within 48 hours_
 
 ## The file this produces
 
@@ -479,6 +485,10 @@ _unanswered_
 _unanswered_
 
 ### Admin support `admin_support`
+
+_unanswered_
+
+### Tools you use `tools_we_use`
 
 _unanswered_
 

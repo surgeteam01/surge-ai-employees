@@ -3,26 +3,26 @@
     {
       "key": "business-strategist",
       "name": "The Business Strategist",
-      "version": "abf038d7de2a",
-      "digest": "abf038d7de2a2aa2fbaf5826fbbb7d34f9398585a6608e25793f0bc94fb35a02"
+      "version": "9273e3804152",
+      "digest": "9273e38041522b6825606650a83a54c36ab7ed4b2cb478c30d09b32d20f82449"
     },
     {
       "key": "content-marketer",
       "name": "The Content Marketer",
-      "version": "7cb7fda1b003",
-      "digest": "7cb7fda1b00336c577fb8c6aa00588ae50efafab3bb27859655371a0f5e91308"
+      "version": "61a98de78025",
+      "digest": "61a98de780251a16161b59bca2220d9f1352e5e8c60a6b5436f2841b928d32b0"
     },
     {
       "key": "growth-and-sales",
       "name": "The Growth & Sales Rep",
-      "version": "43ddbe456f39",
-      "digest": "43ddbe456f392a44e1fd57ad12bf708bca7811b18a3bfe719ca0a6854594b378"
+      "version": "a737d3d45177",
+      "digest": "a737d3d451772c5bd1188964f8ee5c5fb846fc410e27102c7386e2f4f2f7a9a1"
     },
     {
       "key": "brand-and-product",
       "name": "The Brand & Product Builder",
-      "version": "92a8b5eae36b",
-      "digest": "92a8b5eae36b8d4431d46a19d7c3de3c1de668066f2b3ee71d457a4e232ca4fc"
+      "version": "8ebcb768114c",
+      "digest": "8ebcb768114c304d39c9a1f51eeb3bdf5ec7be08bad53efaf8297f09da45f9b3"
     }
   ],
   "archives": [

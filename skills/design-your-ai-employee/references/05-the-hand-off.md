@@ -33,7 +33,8 @@ Check which tools are offered. Never claim a door you cannot reach.
    the gaps: `contribution_create_draft` with the design as its narrative, the skill
    files through `contribution_attach_skill`, and one `feature_request_submit` per
    *request* need carrying its capability spec. The person says yes or no; you never
-   submit unasked.
+   submit unasked. Share the skill files exactly as `skill-creator`'s Module 4 does —
+   including the `.surge-share.json` that keeps a re-send an update.
 
 ## At Agent Studio
 
