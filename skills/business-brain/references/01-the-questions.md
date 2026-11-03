@@ -1,6 +1,6 @@
 # Module 1: The questions
 
-<!-- GENERATED from packages/core/src/business-brain.ts by scripts/generate-business-brain-questions.mjs.
+<!-- GENERATED from packages/agents/core/src/business-brain.ts by scripts/generate-business-brain-questions.mjs.
      Do not edit: change the catalogue upstream and run `npm run generate:business-brain-questions`. -->
 
 **Purpose:** The exact questions a Business Brain answers, in the order to ask them, with the key each answer is stored under. This is the same catalogue the hosted Business Brain uses, so a file written from these questions can be handed straight to Client OS later — nothing is retyped.

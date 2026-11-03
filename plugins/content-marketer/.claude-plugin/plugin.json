@@ -1,0 +1,14 @@
+{
+  "name": "content-marketer",
+  "displayName": "The Content Marketer",
+  "version": "cd0c19950119",
+  "description": "Fills the calendar, in your voice, without you writing it.",
+  "author": {
+    "name": "Surge Systems"
+  },
+  "homepage": "https://github.com/surgeteam01/surge-ai-employees",
+  "repository": "https://github.com/surgeteam01/surge-ai-employees",
+  "dependencies": [
+    "ai-coo"
+  ]
+}

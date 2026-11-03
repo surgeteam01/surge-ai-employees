@@ -76,5 +76,5 @@ other skill reads first, so nobody explains their business twice. Start there.
 *Part of AI Employees for Founders by Surge Systems.*
 *These skills are yours to use. Please do not redistribute them.*
 
-Pack version `a737d3d45177` — see `VERSION` for the capability
+Pack version `28f2b707419a` — see `VERSION` for the capability
 digests. If we improve one of these, the update names the capability that moved.

@@ -1,0 +1,14 @@
+{
+  "name": "brand-and-product",
+  "displayName": "The Brand & Product Builder",
+  "version": "91cc105c2ab2",
+  "description": "Builds the thing you sell, and makes it look like it is worth the price.",
+  "author": {
+    "name": "Surge Systems"
+  },
+  "homepage": "https://github.com/surgeteam01/surge-ai-employees",
+  "repository": "https://github.com/surgeteam01/surge-ai-employees",
+  "dependencies": [
+    "ai-coo"
+  ]
+}

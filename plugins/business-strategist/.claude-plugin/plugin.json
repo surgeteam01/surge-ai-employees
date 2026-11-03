@@ -1,0 +1,14 @@
+{
+  "name": "business-strategist",
+  "displayName": "The Business Strategist",
+  "version": "d2e1cfeed118",
+  "description": "Tells you what is actually wrong, and what to fix first.",
+  "author": {
+    "name": "Surge Systems"
+  },
+  "homepage": "https://github.com/surgeteam01/surge-ai-employees",
+  "repository": "https://github.com/surgeteam01/surge-ai-employees",
+  "dependencies": [
+    "ai-coo"
+  ]
+}

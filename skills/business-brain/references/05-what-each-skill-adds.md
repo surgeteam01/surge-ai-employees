@@ -1,6 +1,6 @@
 # Module 5: What each skill adds
 
-<!-- GENERATED from packages/core/src/business-brain-crosswalk.ts by scripts/generate-business-brain-crosswalk.mjs.
+<!-- GENERATED from packages/agents/core/src/business-brain-crosswalk.ts by scripts/generate-business-brain-crosswalk.mjs.
      Do not edit: change the crosswalk upstream and run `npm run generate:business-brain-crosswalk`. -->
 
 **Purpose:** Which fields of `BUSINESS-BRAIN.md` each skill reads at its onboarding, and which it hands back when it finishes — so a founder (or the AI COO) can see which skill will fill a gap in the brain, and so a skill's hand-back is expected rather than a surprise.

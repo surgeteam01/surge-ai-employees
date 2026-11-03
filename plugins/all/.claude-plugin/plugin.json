@@ -1,0 +1,18 @@
+{
+  "name": "all",
+  "displayName": "The whole team",
+  "version": "76e8a5dc5c74",
+  "description": "Every AI Employee at once: The Business Strategist, The Content Marketer, The Growth & Sales Rep and The Brand & Product Builder, with The AI COO and the Business Brain.",
+  "author": {
+    "name": "Surge Systems"
+  },
+  "homepage": "https://github.com/surgeteam01/surge-ai-employees",
+  "repository": "https://github.com/surgeteam01/surge-ai-employees",
+  "dependencies": [
+    "ai-coo",
+    "business-strategist",
+    "content-marketer",
+    "growth-and-sales",
+    "brand-and-product"
+  ]
+}

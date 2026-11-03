@@ -1,0 +1,39 @@
+{
+  "name": "surge-ai-employees",
+  "owner": {
+    "name": "Surge Systems"
+  },
+  "description": "AI Employees for founders: a team of Claude skills, each one a job a founder already has a name for. Install all for the whole team, or one AI Employee by its key.",
+  "plugins": [
+    {
+      "name": "all",
+      "source": "./plugins/all",
+      "description": "Every AI Employee at once: The Business Strategist, The Content Marketer, The Growth & Sales Rep and The Brand & Product Builder, with The AI COO and the Business Brain."
+    },
+    {
+      "name": "ai-coo",
+      "source": "./plugins/ai-coo",
+      "description": "The front door and the memory: The AI COO routes a goal to the right AI Employee, and the Business Brain remembers your business. Comes with every AI Employee."
+    },
+    {
+      "name": "business-strategist",
+      "source": "./plugins/business-strategist",
+      "description": "Tells you what is actually wrong, and what to fix first."
+    },
+    {
+      "name": "content-marketer",
+      "source": "./plugins/content-marketer",
+      "description": "Fills the calendar, in your voice, without you writing it."
+    },
+    {
+      "name": "growth-and-sales",
+      "source": "./plugins/growth-and-sales",
+      "description": "Turns attention into booked calls, and calls into revenue."
+    },
+    {
+      "name": "brand-and-product",
+      "source": "./plugins/brand-and-product",
+      "description": "Builds the thing you sell, and makes it look like it is worth the price."
+    }
+  ]
+}

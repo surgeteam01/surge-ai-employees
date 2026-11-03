@@ -1,0 +1,14 @@
+{
+  "name": "growth-and-sales",
+  "displayName": "The Growth & Sales Rep",
+  "version": "5d9c860ed3cf",
+  "description": "Turns attention into booked calls, and calls into revenue.",
+  "author": {
+    "name": "Surge Systems"
+  },
+  "homepage": "https://github.com/surgeteam01/surge-ai-employees",
+  "repository": "https://github.com/surgeteam01/surge-ai-employees",
+  "dependencies": [
+    "ai-coo"
+  ]
+}
