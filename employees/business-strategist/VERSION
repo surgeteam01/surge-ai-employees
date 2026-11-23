@@ -1,18 +1,18 @@
 The Business Strategist
-pack     068d2a377234
-digest   068d2a377234ef9e3b2fe587f45fe3e30505981578a7a5b94256004fae318fe7
+pack     d1fa6ed7a25d
+digest   d1fa6ed7a25d755038dfb821808f2199a8c2556282f6c5556bf229a43fa05aa2
 
 Capabilities in this pack:
-  audit-my-business                      8bc48c3ea681
+  audit-my-business                      e333f89c0a7f
   business-analyst                       f9755e7235f6
-  find-your-niche                        c2b6abd3dc3a
-  pricing-and-packaging                  be9019036a11
-  productize-your-service                c8011a352be1
+  find-your-niche                        bd7168e87d6c
+  pricing-and-packaging                  8dfb4be9a1ed
+  productize-your-service                816e4154d3a0
   master-ai-prompting                    b82d35d53666
   ai-coo                                 501a86c49744
-  business-brain                         df4c4f741662
-  design-your-ai-employee                57cf4b647515
-  skill-creator                          5b4431db292a
+  business-brain                         72ff941e7a09
+  design-your-ai-employee                e0630d062570
+  skill-creator                          3c0c8299954f
 
 Quote the pack line if you ask us about this download. Each capability carries
 its own digest, so an update names what actually changed rather than telling you

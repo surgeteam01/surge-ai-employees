@@ -55,6 +55,10 @@ Check which tools are offered. Never claim a door you cannot reach.
    the desk; accepting the evaluation creates the suite and a *person* presses measure;
    accepting the employee produces a pack folder and a charter draft an admin publishes.
    Nothing is live until then.
+6. **Say how it will be checked:** what you designed arrives on the setup desk with its
+   outcomes and checks — each outcome checked by the case in its place — and it is
+   **not verified until those checks have run**. An outcome with no case arrives with no
+   check, and says so.
 
 ## At Client OS
 

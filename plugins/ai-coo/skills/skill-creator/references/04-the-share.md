@@ -89,6 +89,10 @@ Say it, every time:
   it *and* a reviewer — somebody other than them — accepts it.
 - **Accepting is not publishing.** An accepted skill is taken into the skill corpus by
   a developer and reaches the owner's pack on the next release.
+- **It is not verified until its checks have run.** A skill shared with a design's cases
+  arrives on the setup desk with one outcome per case and those cases as its checks; a
+  skill shared with no cases arrives with none, and reads *unverified* until somebody
+  gives it outcomes and checks there.
 - **Sending again updates the draft**, and an edit to a skill sent back for changes
   reopens it.
 

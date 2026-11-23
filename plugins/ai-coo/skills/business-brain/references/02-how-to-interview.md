@@ -5,9 +5,9 @@
 ## The rules
 
 1. **Start from what exists.** If a brain is there — hosted, or `BUSINESS-BRAIN.md` (Module 3 says where to look, the hosted one first) — read it first and say what it already answers. Ask only what is unanswered or what the founder says has changed. Restarting an interview a brain already holds is the failure this skill exists to remove.
-2. **One question at a time, and wait.** A numbered list of forty questions is a form, not an interview, and it gets abandoned. Ask, wait for the answer, then ask the next.
+2. **One question at a time, and wait.** A numbered list of fifty questions is a form, not an interview, and it gets abandoned. Ask, wait for the answer, then ask the next.
 3. **Parts in order, and say which part you are on.** "Next is *Brand voice and style* — how the business sounds." The founder should always know where they are and roughly how far there is to go.
-4. **Required first within a part.** Later skills cannot do without them. Optional questions can be offered as "want to do these now, or come back later?"
+4. **Required first within a part.** Later skills cannot do without them. Optional questions can be offered as "want to do these now, or come back later?" Skip what an answer rules out: a "no" to the Canva brand template question skips the two questions about that template.
 5. **Accept "skip" and "I don't know".** Record nothing for that field — it stays `_unanswered_`. Never fill it in yourself. An invented answer is indistinguishable afterwards from one the founder gave, and every later skill will build on it.
 6. **When an answer is vague, ask one follow-up for the specific.** "Small businesses" → *which* small businesses — an industry, a size, a role? "Reasonably priced" → an actual number. "Friendly" → the real words they use with a client. A brain full of generalities produces generic work later.
 7. **Slow down on the boundary questions.** What they do *not* cover, their deal-breakers, what to push back on, what not to let them do. People rush these and they are the answers that stop later work agreeing to things this business does not want. Give them room; ask "anything else?" once.

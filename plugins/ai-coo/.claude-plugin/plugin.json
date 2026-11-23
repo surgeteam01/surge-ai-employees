@@ -1,7 +1,7 @@
 {
   "name": "ai-coo",
   "displayName": "The AI COO",
-  "version": "c0429d206ae3",
+  "version": "f4d47715defb",
   "description": "The front door and the memory: The AI COO routes a goal to the right AI Employee, and the Business Brain remembers your business. Comes with every AI Employee.",
   "author": {
     "name": "Surge Systems"

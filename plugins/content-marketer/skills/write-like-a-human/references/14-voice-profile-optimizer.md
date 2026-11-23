@@ -45,6 +45,7 @@ This skill establishes facts the founder's Business Brain should keep:
 - Preferred length `content_length`
 - Emoji use `emoji_use`
 - Formatting style `formatting_style`
+- Language and spelling `language_and_spelling`
 
 Before finishing, write those as a block in the file's own shape — a `###` heading per field carrying its key, then the answer (bullets for a list, a sentence or two for text) — and show it to the founder.
 

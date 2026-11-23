@@ -66,6 +66,10 @@ A case is what "good" looked like in the interview, made testable:
 Three cases is the floor. The strong set has one ordinary day, one empty day (nothing
 to do — a good employee says so), and one edge the person named.
 
+**Write the cases in the order of the outcomes.** The first case checks the first
+outcome, the second the second: that is how each outcome finds its check once the
+design is accepted. An outcome with no case in its place arrives with no check.
+
 ## Recommending a tier, and two models to measure
 
 - **lookup** — the employee reads and reports; no drafting.
